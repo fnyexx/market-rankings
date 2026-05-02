@@ -419,7 +419,8 @@
         }
 
         for (const row of filtered) {
-          const changeClass = row.pct_change >= 0 ? "positive" : "negative";
+          const changeClass = row.direction === "short" ? "negative" : "positive";
+          const displayPctChange = row.abs_pct_change ?? Math.abs(row.pct_change || 0);
           const directionLabel = row.direction === "short" ? "\u7a7a" : "\u591a";
           const directionClass = row.direction === "short" ? "negative" : "positive";
           const tr = document.createElement("tr");
@@ -427,7 +428,7 @@
             <td>${row.rank}</td>
             <td>${row.inst_id}</td>
             <td class="${directionClass}">${directionLabel}</td>
-            <td class="${changeClass}">${fmtNumber.format(row.pct_change)}%</td>
+            <td class="${changeClass}">${fmtNumber.format(displayPctChange)}%</td>
             <td>${fmtVolume.format(row.volume_quote || 0)}</td>
             <td>${fmtNumber.format(row.open_price)}</td>
             <td>${fmtNumber.format(row.close_price)}</td>
