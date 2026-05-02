@@ -3,7 +3,7 @@
 host: 127.0.0.1
 
 # Web 服务监听端口。
-port: 8000
+port: 8001
 
 # SQLite 数据库文件路径。
 db_path: data/market_rankings.sqlite3
