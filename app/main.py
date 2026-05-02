@@ -67,6 +67,58 @@ async def api_volume(
     return _ranking_response("volume", window, limit, direction)
 
 
+@app.get("/api/instruments")
+async def api_instruments(
+    query: str = Query(""),
+    limit: int = Query(500, ge=1, le=2000),
+) -> dict:
+    rows = db.list_instruments(query, limit)
+    return {
+        "query": query,
+        "limit": limit,
+        "data": [
+            {
+                "inst_id": row["inst_id"],
+                "base_ccy": row["base_ccy"],
+                "quote_ccy": row["quote_ccy"],
+                "settle_ccy": row["settle_ccy"],
+                "state": row["state"],
+                "updated_at": row["updated_at"],
+            }
+            for row in rows
+        ],
+    }
+
+
+@app.get("/api/candles")
+async def api_candles(
+    inst_id: str = Query(..., min_length=1),
+    limit: int = Query(100, ge=1, le=1000),
+) -> dict:
+    inst_id = inst_id.upper()
+    rows = db.query_candles(inst_id, limit)
+    return {
+        "inst_id": inst_id,
+        "bar": "1H",
+        "limit": limit,
+        "data": [
+            {
+                "ts": row["ts"],
+                "open": row["open"],
+                "high": row["high"],
+                "low": row["low"],
+                "close": row["close"],
+                "volume_contract": row["volume_contract"],
+                "volume_base": row["volume_base"],
+                "volume_quote": row["volume_quote"],
+                "confirmed": row["confirmed"],
+                "fetched_at": row["fetched_at"],
+            }
+            for row in rows
+        ],
+    }
+
+
 def _ranking_response(metric: str, window: str, limit: int, direction: str | None = None) -> dict:
     if window not in WINDOWS:
         raise HTTPException(status_code=400, detail=f"window must be one of {', '.join(WINDOWS)}")

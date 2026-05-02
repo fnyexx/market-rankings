@@ -14,10 +14,11 @@ python -m venv .venv
 
 - http://127.0.0.1:8000/
 
-主页面有三个菜单：
+主页面有四个菜单：
 
 - 涨跌幅
 - 交易量
+- K 线数据
 - API 文档
 
 兼容入口仍保留，并渲染同一个页面：
@@ -107,11 +108,25 @@ GET /api/rankings/change?window=24h&limit=50&direction=long
 GET /api/rankings/volume?window=24h&limit=50&direction=short
 ```
 
+合约列表：
+
+```text
+GET /api/instruments?query=BTC&limit=50
+```
+
+K 线数据：
+
+```text
+GET /api/candles?inst_id=BTC-USDT-SWAP&limit=100
+```
+
 参数：
 
 - `window`：可选 `1h`、`2h`、`4h`、`12h`、`24h`，默认 `24h`。
 - `limit`：返回条数，范围 `1` 到 `500`，默认 `50`。
 - `direction`：多空方向，可选 `long`、`short`；不传则返回全部方向。
+- `query`：合约搜索关键词，用于 `/api/instruments`。
+- `inst_id`：OKX 合约 ID，用于 `/api/candles`，例如 `BTC-USDT-SWAP`。
 
 返回示例：
 

@@ -114,6 +114,32 @@ def list_instrument_ids() -> list[str]:
     return [row["inst_id"] for row in rows]
 
 
+def list_instruments(query: str = "", limit: int = 500) -> list[sqlite3.Row]:
+    keyword = f"%{query.upper()}%"
+    with connect() as conn:
+        if query:
+            return conn.execute(
+                """
+                SELECT inst_id, base_ccy, quote_ccy, settle_ccy, state, updated_at
+                FROM instruments
+                WHERE state = 'live' AND UPPER(inst_id) LIKE ?
+                ORDER BY inst_id
+                LIMIT ?
+                """,
+                (keyword, limit),
+            ).fetchall()
+        return conn.execute(
+            """
+            SELECT inst_id, base_ccy, quote_ccy, settle_ccy, state, updated_at
+            FROM instruments
+            WHERE state = 'live'
+            ORDER BY inst_id
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+
+
 def upsert_candles(inst_id: str, candles: Iterable[Sequence[str]]) -> None:
     now = int(time.time())
     rows = []
@@ -190,6 +216,23 @@ def query_rankings(metric: str, window: str, limit: int, direction: str | None =
             LIMIT ?
             """,
             params,
+        ).fetchall()
+
+
+def query_candles(inst_id: str, limit: int) -> list[sqlite3.Row]:
+    with connect() as conn:
+        return conn.execute(
+            """
+            SELECT
+              inst_id, ts, open, high, low, close,
+              volume_contract, volume_base, volume_quote,
+              confirmed, fetched_at
+            FROM candles_1h
+            WHERE inst_id = ?
+            ORDER BY ts DESC
+            LIMIT ?
+            """,
+            (inst_id, limit),
         ).fetchall()
 
 

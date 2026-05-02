@@ -180,7 +180,7 @@ pct_change < 0  => short
 当前页面：
 
 - `/`：统一排行榜页面。
-- 页面顶部三个菜单：涨跌幅、交易量、API 文档。
+- 页面顶部四个菜单：涨跌幅、交易量、K 线数据、API 文档。
 - `/rankings/change` 和 `/rankings/volume` 保留为兼容入口，仍渲染同一个页面。
 
 页面能力：
@@ -189,12 +189,15 @@ pct_change < 0  => short
 - 表头排序
 - 合约搜索
 - 自动刷新
+- K 线数据菜单默认选择 `BTC-USDT-SWAP`，只有选中合约后才查询本地 K 线数据
 
 ## API
 
 ```text
 GET /api/rankings/change?window=24h&limit=50&direction=long
 GET /api/rankings/volume?window=24h&limit=50&direction=short
+GET /api/instruments?query=BTC&limit=50
+GET /api/candles?inst_id=BTC-USDT-SWAP&limit=100
 ```
 
 参数：
@@ -202,6 +205,8 @@ GET /api/rankings/volume?window=24h&limit=50&direction=short
 - `window`：`1h`、`2h`、`4h`、`12h`、`24h`
 - `limit`：返回数量，范围 `1` 到 `500`
 - `direction`：多空方向，可选 `long`、`short`；不传则返回全部方向
+- `query`：合约搜索关键词，用于合约列表接口
+- `inst_id`：OKX 合约 ID，用于 K 线查询接口
 
 ## 后续优化
 

@@ -75,6 +75,13 @@
         min-width: 220px;
         padding: 9px 12px;
       }
+      select {
+        border: 1px solid #c9d3df;
+        border-radius: 6px;
+        font-size: 14px;
+        min-width: 260px;
+        padding: 9px 12px;
+      }
       table {
         width: 100%;
         border-collapse: collapse;
@@ -166,6 +173,7 @@
         <nav aria-label="ranking navigation">
           <button type="button" class="top-menu active" data-view="pct_change">&#28072;&#36300;&#24133;</button>
           <button type="button" class="top-menu" data-view="volume">&#20132;&#26131;&#37327;</button>
+          <button type="button" class="top-menu" data-view="candles">K&#32447;&#25968;&#25454;</button>
           <button type="button" class="top-menu" data-view="api_docs">API&#25991;&#26723;</button>
         </nav>
       </div>
@@ -197,6 +205,32 @@
         </div>
       </section>
 
+      <section id="candles-view" class="hidden">
+        <div class="toolbar">
+          <select id="candle-inst"></select>
+          <button type="button" id="load-candles">&#26597;&#35810;</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>&#26102;&#38388;</th>
+                <th>&#24320;&#30424;&#20215;</th>
+                <th>&#26368;&#39640;&#20215;</th>
+                <th>&#26368;&#20302;&#20215;</th>
+                <th>&#25910;&#30424;&#20215;</th>
+                <th>&#25104;&#20132;&#37327; USDT</th>
+                <th>&#26159;&#21542;&#30830;&#35748;</th>
+                <th>&#20889;&#20837;&#26102;&#38388;</th>
+              </tr>
+            </thead>
+            <tbody id="candle-rows">
+              <tr><td colspan="8" class="muted">&#35831;&#20808;&#36873;&#25321;&#21512;&#32422;</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
       <section id="api-docs-view" class="doc-panel hidden">
         <h2>API&#25991;&#26723;</h2>
         <p>&#25152;&#26377;&#25509;&#21475;&#26242;&#26102;&#26080;&#38656;&#37492;&#26435;&#65292;&#36820;&#22238; JSON&#12290;</p>
@@ -208,6 +242,10 @@
         <h3>&#20132;&#26131;&#37327;&#25490;&#34892;&#27036;</h3>
         <p>&#25353;&#25351;&#23450;&#26102;&#38388;&#31383;&#21475;&#33719;&#21462;&#35745;&#20215;&#36135;&#24065;&#25104;&#20132;&#37327;&#26368;&#39640;&#30340;&#21512;&#32422;&#21015;&#34920;&#65292;&#20363;&#22914; USDT &#25104;&#20132;&#37327;&#12290;</p>
         <pre><code>GET /api/rankings/volume?window=24h&amp;limit=50&amp;direction=short</code></pre>
+
+        <h3>K&#32447;&#25968;&#25454;</h3>
+        <p>&#26597;&#35810;&#25351;&#23450;&#21512;&#32422;&#30340;&#26412;&#22320; 1H K &#32447;&#25968;&#25454;&#12290;</p>
+        <pre><code>GET /api/candles?inst_id=BTC-USDT-SWAP&amp;limit=100</code></pre>
 
         <h3>&#35831;&#27714;&#21442;&#25968;</h3>
         <table>
@@ -369,12 +407,14 @@
       const windows = ["1h", "2h", "4h", "12h", "24h"];
       let currentWindow = "24h";
       let rows = [];
+      let candlesLoaded = false;
       let sortKey = "abs_pct_change";
       let sortDirection = "desc";
 
       const labels = {
         pct_change: "\u6da8\u8dcc\u5e45\u6392\u884c\u699c",
         volume: "\u4ea4\u6613\u91cf\u6392\u884c\u699c",
+        candles: "K\u7ebf\u6570\u636e",
         api_docs: "API\u6587\u6863"
       };
       const fmtNumber = new Intl.NumberFormat("zh-CN", { maximumFractionDigits: 4 });
@@ -397,12 +437,68 @@
       }
 
       async function loadRows() {
-        if (currentView === "api_docs") return;
+        if (currentView === "api_docs" || currentView === "candles") return;
         const endpoint = metric === "volume" ? "/api/rankings/volume" : "/api/rankings/change";
         const response = await fetch(`${endpoint}?window=${currentWindow}&limit=200`);
         const payload = await response.json();
         rows = payload.data || [];
         renderRows();
+      }
+
+      async function loadInstruments() {
+        const select = document.getElementById("candle-inst");
+        const response = await fetch("/api/instruments?limit=2000");
+        const payload = await response.json();
+        const instruments = payload.data || [];
+        select.innerHTML = "";
+        for (const item of instruments) {
+          const option = document.createElement("option");
+          option.value = item.inst_id;
+          option.textContent = item.inst_id;
+          select.appendChild(option);
+        }
+        const defaultInst = instruments.find(item => item.inst_id === "BTC-USDT-SWAP") || instruments[0];
+        if (defaultInst) {
+          select.value = defaultInst.inst_id;
+          candlesLoaded = true;
+          loadCandles();
+        } else {
+          renderCandleRows([]);
+        }
+      }
+
+      async function loadCandles() {
+        const instId = document.getElementById("candle-inst").value;
+        if (!instId) {
+          renderCandleRows([]);
+          return;
+        }
+        const response = await fetch(`/api/candles?inst_id=${encodeURIComponent(instId)}&limit=100`);
+        const payload = await response.json();
+        renderCandleRows(payload.data || []);
+      }
+
+      function renderCandleRows(candles) {
+        const tbody = document.getElementById("candle-rows");
+        tbody.innerHTML = "";
+        if (!candles.length) {
+          tbody.innerHTML = '<tr><td colspan="8" class="muted">\u6682\u65e0K\u7ebf\u6570\u636e</td></tr>';
+          return;
+        }
+        for (const row of candles) {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${formatMsTime(row.ts)}</td>
+            <td>${fmtNumber.format(row.open)}</td>
+            <td>${fmtNumber.format(row.high)}</td>
+            <td>${fmtNumber.format(row.low)}</td>
+            <td>${fmtNumber.format(row.close)}</td>
+            <td>${fmtVolume.format(row.volume_quote || 0)}</td>
+            <td>${row.confirmed ? "\u662f" : "\u5426"}</td>
+            <td>${formatTime(row.fetched_at)}</td>
+          `;
+          tbody.appendChild(tr);
+        }
       }
 
       function renderRows() {
@@ -450,15 +546,32 @@
         return new Date(seconds * 1000).toLocaleString("zh-CN", { hour12: false });
       }
 
+      function formatMsTime(milliseconds) {
+        if (!milliseconds) return "";
+        return new Date(milliseconds).toLocaleString("zh-CN", { hour12: false });
+      }
+
       function setView(view) {
         currentView = view;
         document.querySelectorAll(".top-menu").forEach(item => {
           item.classList.toggle("active", item.dataset.view === view);
         });
         document.getElementById("page-title").textContent = labels[view];
-        document.getElementById("ranking-view").classList.toggle("hidden", view === "api_docs");
+        document.getElementById("ranking-view").classList.toggle(
+          "hidden",
+          view === "api_docs" || view === "candles"
+        );
+        document.getElementById("candles-view").classList.toggle("hidden", view !== "candles");
         document.getElementById("api-docs-view").classList.toggle("hidden", view !== "api_docs");
 
+        if (view === "candles") {
+          if (!candlesLoaded) {
+            loadInstruments();
+          } else {
+            loadCandles();
+          }
+          return;
+        }
         if (view === "api_docs") return;
         metric = view;
         sortKey = metric === "volume" ? "volume_quote" : "abs_pct_change";
@@ -467,6 +580,8 @@
       }
 
       document.getElementById("search").addEventListener("input", renderRows);
+      document.getElementById("load-candles").addEventListener("click", loadCandles);
+      document.getElementById("candle-inst").addEventListener("change", loadCandles);
       document.querySelectorAll(".top-menu").forEach(button => {
         button.addEventListener("click", () => setView(button.dataset.view));
       });
