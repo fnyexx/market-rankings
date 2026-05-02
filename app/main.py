@@ -78,6 +78,7 @@ def _ranking_response(metric: str, window: str, limit: int) -> dict:
             {
                 "rank": index + 1,
                 "inst_id": row["inst_id"],
+                "direction": row["direction"],
                 "pct_change": row["pct_change"],
                 "volume_quote": row["volume_quote"],
                 "open_price": row["open_price"],

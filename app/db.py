@@ -50,6 +50,7 @@ def init_db() -> None:
               metric TEXT NOT NULL,
               window TEXT NOT NULL,
               inst_id TEXT NOT NULL,
+              direction TEXT NOT NULL DEFAULT 'long',
               pct_change REAL,
               volume_quote REAL,
               open_price REAL,
@@ -67,6 +68,7 @@ def init_db() -> None:
             ON rankings(metric, window, volume_quote DESC);
             """
         )
+        _ensure_column(conn, "rankings", "direction", "TEXT NOT NULL DEFAULT 'long'")
 
 
 def upsert_instruments(instruments: Iterable[dict]) -> None:
@@ -163,10 +165,10 @@ def replace_rankings(rows: Iterable[tuple]) -> None:
         conn.executemany(
             """
             INSERT INTO rankings (
-              metric, window, inst_id, pct_change, volume_quote,
+              metric, window, inst_id, direction, pct_change, volume_quote,
               open_price, close_price, start_ts, end_ts, calculated_at
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             [(*row, calculated_at) for row in rows],
         )
@@ -191,3 +193,10 @@ def _optional_float(values: Sequence[str], index: int) -> float | None:
     if len(values) <= index or values[index] == "":
         return None
     return float(values[index])
+
+
+def _ensure_column(conn: sqlite3.Connection, table: str, column: str, definition: str) -> None:
+    columns = conn.execute(f"PRAGMA table_info({table})").fetchall()
+    if any(row["name"] == column for row in columns):
+        return
+    conn.execute(f"ALTER TABLE {table} ADD COLUMN {column} {definition}")

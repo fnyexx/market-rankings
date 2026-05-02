@@ -34,10 +34,12 @@ def calculate_rankings() -> int:
                 if open_price <= 0:
                     continue
                 pct_change = (close_price - open_price) / open_price * 100
+                direction = "long" if pct_change >= 0 else "short"
                 volume_quote = sum(row["volume_quote"] or 0 for row in scoped)
                 common = (
                     window,
                     inst_id,
+                    direction,
                     pct_change,
                     volume_quote,
                     open_price,

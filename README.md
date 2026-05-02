@@ -124,6 +124,7 @@ GET /api/rankings/volume?window=24h&limit=50
     {
       "rank": 1,
       "inst_id": "BTC-USDT-SWAP",
+      "direction": "long",
       "pct_change": 2.31,
       "volume_quote": 123456789.12,
       "open_price": 62000,

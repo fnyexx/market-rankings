@@ -124,6 +124,7 @@ GET /api/v5/market/candles?instId=BTC-USDT-SWAP&bar=1H&limit=25
 - `metric`：`pct_change` 或 `volume`
 - `window`：`1h`、`2h`、`4h`、`12h`、`24h`
 - `inst_id`
+- `direction`：多空方向，`long` 表示多，`short` 表示空
 - `pct_change`
 - `volume_quote`
 - `open_price`
@@ -159,6 +160,13 @@ volume_quote = sum(volume_quote)
 ```
 
 当前只使用 `confirmed = 1` 的已确认 K 线参与计算。
+
+多空方向按涨跌幅判断：
+
+```text
+pct_change >= 0 => long
+pct_change < 0  => short
+```
 
 ## Web 页面
 

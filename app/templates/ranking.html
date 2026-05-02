@@ -127,6 +127,15 @@
         font-size: 14px;
         line-height: 1.7;
       }
+      .doc-panel table {
+        margin-top: 8px;
+      }
+      .doc-panel th,
+      .doc-panel td {
+        text-align: left;
+        white-space: normal;
+        vertical-align: top;
+      }
       code, pre {
         background: #f1f5f9;
         border-radius: 6px;
@@ -173,6 +182,7 @@
               <tr>
                 <th data-key="rank">&#25490;&#21517;</th>
                 <th data-key="inst_id">&#21512;&#32422;</th>
+                <th data-key="direction">&#26041;&#21521;</th>
                 <th data-key="pct_change">&#28072;&#36300;&#24133;</th>
                 <th data-key="volume_quote">&#25104;&#20132;&#37327; USDT</th>
                 <th data-key="open_price">&#24320;&#22987;&#20215;</th>
@@ -181,7 +191,7 @@
               </tr>
             </thead>
             <tbody id="rows">
-              <tr><td colspan="7" class="muted">&#21152;&#36733;&#20013;</td></tr>
+              <tr><td colspan="8" class="muted">&#21152;&#36733;&#20013;</td></tr>
             </tbody>
           </table>
         </div>
@@ -192,16 +202,129 @@
         <p>&#25152;&#26377;&#25509;&#21475;&#26242;&#26102;&#26080;&#38656;&#37492;&#26435;&#65292;&#36820;&#22238; JSON&#12290;</p>
 
         <h3>&#28072;&#36300;&#24133;&#25490;&#34892;&#27036;</h3>
+        <p>&#25353;&#25351;&#23450;&#26102;&#38388;&#31383;&#21475;&#33719;&#21462;&#28072;&#36300;&#24133;&#26368;&#39640;&#30340;&#21512;&#32422;&#21015;&#34920;&#12290;</p>
         <pre><code>GET /api/rankings/change?window=24h&amp;limit=50</code></pre>
 
         <h3>&#20132;&#26131;&#37327;&#25490;&#34892;&#27036;</h3>
+        <p>&#25353;&#25351;&#23450;&#26102;&#38388;&#31383;&#21475;&#33719;&#21462;&#35745;&#20215;&#36135;&#24065;&#25104;&#20132;&#37327;&#26368;&#39640;&#30340;&#21512;&#32422;&#21015;&#34920;&#65292;&#20363;&#22914; USDT &#25104;&#20132;&#37327;&#12290;</p>
         <pre><code>GET /api/rankings/volume?window=24h&amp;limit=50</code></pre>
 
         <h3>&#35831;&#27714;&#21442;&#25968;</h3>
-        <ul>
-          <li><code>window</code>&#65306;&#21487;&#36873; <code>1h</code>&#12289;<code>2h</code>&#12289;<code>4h</code>&#12289;<code>12h</code>&#12289;<code>24h</code>&#65292;&#40664;&#35748; <code>24h</code>&#12290;</li>
-          <li><code>limit</code>&#65306;&#36820;&#22238;&#26465;&#25968;&#65292;&#21462;&#20540; <code>1</code> &#21040; <code>500</code>&#65292;&#40664;&#35748; <code>50</code>&#12290;</li>
-        </ul>
+        <table>
+          <thead>
+            <tr>
+              <th>&#21442;&#25968;</th>
+              <th>&#31867;&#22411;</th>
+              <th>&#24517;&#22635;</th>
+              <th>&#40664;&#35748;&#20540;</th>
+              <th>&#35828;&#26126;</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>window</code></td>
+              <td>string</td>
+              <td>&#21542;</td>
+              <td><code>24h</code></td>
+              <td>&#25490;&#34892;&#26102;&#38388;&#31383;&#21475;&#12290;&#21487;&#36873;&#65306;<code>1h</code>&#12289;<code>2h</code>&#12289;<code>4h</code>&#12289;<code>12h</code>&#12289;<code>24h</code>&#12290;</td>
+            </tr>
+            <tr>
+              <td><code>limit</code></td>
+              <td>integer</td>
+              <td>&#21542;</td>
+              <td><code>50</code></td>
+              <td>&#36820;&#22238;&#25490;&#34892;&#26465;&#25968;&#12290;&#21462;&#20540;&#33539;&#22260;&#65306;<code>1</code> &#21040; <code>500</code>&#12290;</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>&#36820;&#22238;&#23383;&#27573;</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>&#23383;&#27573;</th>
+              <th>&#31867;&#22411;</th>
+              <th>&#35828;&#26126;</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>metric</code></td>
+              <td>string</td>
+              <td>&#25490;&#34892;&#25351;&#26631;&#12290;<code>pct_change</code> &#34920;&#31034;&#28072;&#36300;&#24133;&#65292;<code>volume</code> &#34920;&#31034;&#20132;&#26131;&#37327;&#12290;</td>
+            </tr>
+            <tr>
+              <td><code>window</code></td>
+              <td>string</td>
+              <td>&#26412;&#27425;&#26597;&#35810;&#30340;&#26102;&#38388;&#31383;&#21475;&#12290;</td>
+            </tr>
+            <tr>
+              <td><code>limit</code></td>
+              <td>integer</td>
+              <td>&#26412;&#27425;&#35831;&#27714;&#30340;&#36820;&#22238;&#26465;&#25968;&#19978;&#38480;&#12290;</td>
+            </tr>
+            <tr>
+              <td><code>collector_mode</code></td>
+              <td>string</td>
+              <td>&#24403;&#21069; K &#32447;&#37319;&#38598;&#27169;&#24335;&#65292;<code>rest</code> &#25110; <code>websocket</code>&#12290;</td>
+            </tr>
+            <tr>
+              <td><code>data</code></td>
+              <td>array</td>
+              <td>&#25490;&#34892;&#27036;&#25968;&#25454;&#21015;&#34920;&#12290;</td>
+            </tr>
+            <tr>
+              <td><code>rank</code></td>
+              <td>integer</td>
+              <td>&#25490;&#21517;&#65292;&#20174; <code>1</code> &#24320;&#22987;&#12290;</td>
+            </tr>
+            <tr>
+              <td><code>inst_id</code></td>
+              <td>string</td>
+              <td>OKX &#21512;&#32422; ID&#65292;&#20363;&#22914; <code>BTC-USDT-SWAP</code>&#12290;</td>
+            </tr>
+            <tr>
+              <td><code>direction</code></td>
+              <td>string</td>
+              <td>&#22810;&#31354;&#26041;&#21521;&#12290;<code>long</code> &#34920;&#31034;&#22810;&#65292;<code>short</code> &#34920;&#31034;&#31354;&#12290;&#25353;&#28072;&#36300;&#24133;&#21028;&#26029;&#65306;&#22823;&#20110;&#31561;&#20110; 0 &#20026;&#22810;&#65292;&#23567;&#20110; 0 &#20026;&#31354;&#12290;</td>
+            </tr>
+            <tr>
+              <td><code>pct_change</code></td>
+              <td>number</td>
+              <td>&#28072;&#36300;&#24133;&#30334;&#20998;&#27604;&#12290;&#20363;&#22914; <code>2.31</code> &#34920;&#31034;&#19978;&#28072; <code>2.31%</code>&#12290;</td>
+            </tr>
+            <tr>
+              <td><code>volume_quote</code></td>
+              <td>number</td>
+              <td>&#35745;&#20215;&#36135;&#24065;&#25104;&#20132;&#37327;&#65292;&#40664;&#35748;&#20026; USDT &#21475;&#24452;&#12290;</td>
+            </tr>
+            <tr>
+              <td><code>open_price</code></td>
+              <td>number</td>
+              <td>&#26102;&#38388;&#31383;&#21475;&#36215;&#22987; K &#32447;&#30340;&#24320;&#30424;&#20215;&#12290;</td>
+            </tr>
+            <tr>
+              <td><code>close_price</code></td>
+              <td>number</td>
+              <td>&#26102;&#38388;&#31383;&#21475;&#26411;&#23614; K &#32447;&#30340;&#25910;&#30424;&#20215;&#12290;</td>
+            </tr>
+            <tr>
+              <td><code>start_ts</code></td>
+              <td>integer</td>
+              <td>&#35745;&#31639;&#31383;&#21475;&#36215;&#22987;&#26102;&#38388;&#25139;&#65292;OKX K &#32447;&#27627;&#31186;&#26102;&#38388;&#25139;&#12290;</td>
+            </tr>
+            <tr>
+              <td><code>end_ts</code></td>
+              <td>integer</td>
+              <td>&#35745;&#31639;&#31383;&#21475;&#32467;&#26463;&#26102;&#38388;&#25139;&#65292;OKX K &#32447;&#27627;&#31186;&#26102;&#38388;&#25139;&#12290;</td>
+            </tr>
+            <tr>
+              <td><code>calculated_at</code></td>
+              <td>integer</td>
+              <td>&#25490;&#34892;&#27036;&#35745;&#31639;&#26102;&#38388;&#65292;Unix &#31186;&#26102;&#38388;&#25139;&#12290;</td>
+            </tr>
+          </tbody>
+        </table>
 
         <h3>&#36820;&#22238;&#31034;&#20363;</h3>
         <pre><code>{
@@ -213,6 +336,7 @@
     {
       "rank": 1,
       "inst_id": "BTC-USDT-SWAP",
+      "direction": "long",
       "pct_change": 2.31,
       "volume_quote": 123456789.12,
       "open_price": 62000,
@@ -276,16 +400,19 @@
 
         tbody.innerHTML = "";
         if (!filtered.length) {
-          tbody.innerHTML = '<tr><td colspan="7" class="muted">\u6682\u65e0\u6570\u636e</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="8" class="muted">\u6682\u65e0\u6570\u636e</td></tr>';
           return;
         }
 
         for (const row of filtered) {
           const changeClass = row.pct_change >= 0 ? "positive" : "negative";
+          const directionLabel = row.direction === "short" ? "\u7a7a" : "\u591a";
+          const directionClass = row.direction === "short" ? "negative" : "positive";
           const tr = document.createElement("tr");
           tr.innerHTML = `
             <td>${row.rank}</td>
             <td>${row.inst_id}</td>
+            <td class="${directionClass}">${directionLabel}</td>
             <td class="${changeClass}">${fmtNumber.format(row.pct_change)}%</td>
             <td>${fmtVolume.format(row.volume_quote || 0)}</td>
             <td>${fmtNumber.format(row.open_price)}</td>
