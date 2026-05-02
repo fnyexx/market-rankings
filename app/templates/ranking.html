@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ title }}</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: Arial, "Microsoft YaHei", sans-serif;
+        background: #f4f6f8;
+        color: #17202a;
+      }
+      body {
+        margin: 0;
+      }
+      header {
+        background: #ffffff;
+        border-bottom: 1px solid #dde3ea;
+      }
+      .bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 18px 20px;
+      }
+      h1 {
+        margin: 0;
+        font-size: 22px;
+      }
+      nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      button {
+        border: 1px solid #c9d3df;
+        background: #ffffff;
+        border-radius: 6px;
+        color: #1e2b37;
+        cursor: pointer;
+        font-size: 14px;
+        padding: 8px 12px;
+      }
+      button.active {
+        background: #0f766e;
+        border-color: #0f766e;
+        color: #ffffff;
+      }
+      main {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      .toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 14px;
+      }
+      .windows {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      input {
+        border: 1px solid #c9d3df;
+        border-radius: 6px;
+        font-size: 14px;
+        min-width: 220px;
+        padding: 9px 12px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background: #ffffff;
+        border: 1px solid #dde3ea;
+      }
+      th, td {
+        border-bottom: 1px solid #e6ebf0;
+        font-size: 14px;
+        padding: 10px 12px;
+        text-align: right;
+        white-space: nowrap;
+      }
+      th {
+        background: #eef3f6;
+        cursor: pointer;
+        font-weight: 600;
+      }
+      th:first-child, td:first-child,
+      th:nth-child(2), td:nth-child(2) {
+        text-align: left;
+      }
+      .positive {
+        color: #047857;
+      }
+      .negative {
+        color: #b91c1c;
+      }
+      .muted {
+        color: #667085;
+      }
+      .hidden {
+        display: none;
+      }
+      .doc-panel {
+        background: #ffffff;
+        border: 1px solid #dde3ea;
+        padding: 18px;
+      }
+      .doc-panel h2 {
+        font-size: 18px;
+        margin: 0 0 14px;
+      }
+      .doc-panel h3 {
+        font-size: 15px;
+        margin: 18px 0 8px;
+      }
+      .doc-panel p, .doc-panel li {
+        color: #344054;
+        font-size: 14px;
+        line-height: 1.7;
+      }
+      code, pre {
+        background: #f1f5f9;
+        border-radius: 6px;
+        font-family: Consolas, "Courier New", monospace;
+      }
+      code {
+        padding: 2px 5px;
+      }
+      pre {
+        overflow-x: auto;
+        padding: 12px;
+      }
+      .table-wrap {
+        overflow-x: auto;
+      }
+      @media (max-width: 760px) {
+        .bar {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="bar">
+        <h1 id="page-title">{{ title }}</h1>
+        <nav aria-label="ranking navigation">
+          <button type="button" class="top-menu active" data-view="pct_change">&#28072;&#36300;&#24133;</button>
+          <button type="button" class="top-menu" data-view="volume">&#20132;&#26131;&#37327;</button>
+          <button type="button" class="top-menu" data-view="api_docs">API&#25991;&#26723;</button>
+        </nav>
+      </div>
+    </header>
+    <main>
+      <section id="ranking-view">
+        <div class="toolbar">
+          <div class="windows" id="windows"></div>
+          <input id="search" placeholder="&#25628;&#32034;&#21512;&#32422;&#65292;&#20363;&#22914; BTC">
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th data-key="rank">&#25490;&#21517;</th>
+                <th data-key="inst_id">&#21512;&#32422;</th>
+                <th data-key="pct_change">&#28072;&#36300;&#24133;</th>
+                <th data-key="volume_quote">&#25104;&#20132;&#37327; USDT</th>
+                <th data-key="open_price">&#24320;&#22987;&#20215;</th>
+                <th data-key="close_price">&#26368;&#26032;&#20215;</th>
+                <th data-key="calculated_at">&#35745;&#31639;&#26102;&#38388;</th>
+              </tr>
+            </thead>
+            <tbody id="rows">
+              <tr><td colspan="7" class="muted">&#21152;&#36733;&#20013;</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="api-docs-view" class="doc-panel hidden">
+        <h2>API&#25991;&#26723;</h2>
+        <p>&#25152;&#26377;&#25509;&#21475;&#26242;&#26102;&#26080;&#38656;&#37492;&#26435;&#65292;&#36820;&#22238; JSON&#12290;</p>
+
+        <h3>&#28072;&#36300;&#24133;&#25490;&#34892;&#27036;</h3>
+        <pre><code>GET /api/rankings/change?window=24h&amp;limit=50</code></pre>
+
+        <h3>&#20132;&#26131;&#37327;&#25490;&#34892;&#27036;</h3>
+        <pre><code>GET /api/rankings/volume?window=24h&amp;limit=50</code></pre>
+
+        <h3>&#35831;&#27714;&#21442;&#25968;</h3>
+        <ul>
+          <li><code>window</code>&#65306;&#21487;&#36873; <code>1h</code>&#12289;<code>2h</code>&#12289;<code>4h</code>&#12289;<code>12h</code>&#12289;<code>24h</code>&#65292;&#40664;&#35748; <code>24h</code>&#12290;</li>
+          <li><code>limit</code>&#65306;&#36820;&#22238;&#26465;&#25968;&#65292;&#21462;&#20540; <code>1</code> &#21040; <code>500</code>&#65292;&#40664;&#35748; <code>50</code>&#12290;</li>
+        </ul>
+
+        <h3>&#36820;&#22238;&#31034;&#20363;</h3>
+        <pre><code>{
+  "metric": "pct_change",
+  "window": "24h",
+  "limit": 50,
+  "collector_mode": "rest",
+  "data": [
+    {
+      "rank": 1,
+      "inst_id": "BTC-USDT-SWAP",
+      "pct_change": 2.31,
+      "volume_quote": 123456789.12,
+      "open_price": 62000,
+      "close_price": 63432,
+      "start_ts": 1777647600000,
+      "end_ts": 1777734000000,
+      "calculated_at": 1777737600
+    }
+  ]
+}</code></pre>
+      </section>
+    </main>
+    <script>
+      let metric = "pct_change";
+      let currentView = "pct_change";
+      const windows = ["1h", "2h", "4h", "12h", "24h"];
+      let currentWindow = "24h";
+      let rows = [];
+      let sortKey = "pct_change";
+      let sortDirection = "desc";
+
+      const labels = {
+        pct_change: "\u6da8\u8dcc\u5e45\u6392\u884c\u699c",
+        volume: "\u4ea4\u6613\u91cf\u6392\u884c\u699c",
+        api_docs: "API\u6587\u6863"
+      };
+      const fmtNumber = new Intl.NumberFormat("zh-CN", { maximumFractionDigits: 4 });
+      const fmtVolume = new Intl.NumberFormat("zh-CN", { maximumFractionDigits: 0 });
+
+      function renderWindowButtons() {
+        const container = document.getElementById("windows");
+        container.innerHTML = "";
+        for (const item of windows) {
+          const button = document.createElement("button");
+          button.textContent = item;
+          button.className = item === currentWindow ? "active" : "";
+          button.onclick = () => {
+            currentWindow = item;
+            renderWindowButtons();
+            loadRows();
+          };
+          container.appendChild(button);
+        }
+      }
+
+      async function loadRows() {
+        if (currentView === "api_docs") return;
+        const endpoint = metric === "volume" ? "/api/rankings/volume" : "/api/rankings/change";
+        const response = await fetch(`${endpoint}?window=${currentWindow}&limit=200`);
+        const payload = await response.json();
+        rows = payload.data || [];
+        renderRows();
+      }
+
+      function renderRows() {
+        const keyword = document.getElementById("search").value.trim().toUpperCase();
+        const tbody = document.getElementById("rows");
+        const filtered = rows
+          .filter(row => !keyword || row.inst_id.includes(keyword))
+          .sort((a, b) => compare(a[sortKey], b[sortKey]));
+
+        tbody.innerHTML = "";
+        if (!filtered.length) {
+          tbody.innerHTML = '<tr><td colspan="7" class="muted">\u6682\u65e0\u6570\u636e</td></tr>';
+          return;
+        }
+
+        for (const row of filtered) {
+          const changeClass = row.pct_change >= 0 ? "positive" : "negative";
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${row.rank}</td>
+            <td>${row.inst_id}</td>
+            <td class="${changeClass}">${fmtNumber.format(row.pct_change)}%</td>
+            <td>${fmtVolume.format(row.volume_quote || 0)}</td>
+            <td>${fmtNumber.format(row.open_price)}</td>
+            <td>${fmtNumber.format(row.close_price)}</td>
+            <td>${formatTime(row.calculated_at)}</td>
+          `;
+          tbody.appendChild(tr);
+        }
+      }
+
+      function compare(a, b) {
+        if (typeof a === "string") {
+          return sortDirection === "asc" ? a.localeCompare(b) : b.localeCompare(a);
+        }
+        return sortDirection === "asc" ? (a || 0) - (b || 0) : (b || 0) - (a || 0);
+      }
+
+      function formatTime(seconds) {
+        if (!seconds) return "";
+        return new Date(seconds * 1000).toLocaleString("zh-CN", { hour12: false });
+      }
+
+      function setView(view) {
+        currentView = view;
+        document.querySelectorAll(".top-menu").forEach(item => {
+          item.classList.toggle("active", item.dataset.view === view);
+        });
+        document.getElementById("page-title").textContent = labels[view];
+        document.getElementById("ranking-view").classList.toggle("hidden", view === "api_docs");
+        document.getElementById("api-docs-view").classList.toggle("hidden", view !== "api_docs");
+
+        if (view === "api_docs") return;
+        metric = view;
+        sortKey = metric === "volume" ? "volume_quote" : "pct_change";
+        sortDirection = "desc";
+        loadRows();
+      }
+
+      document.getElementById("search").addEventListener("input", renderRows);
+      document.querySelectorAll(".top-menu").forEach(button => {
+        button.addEventListener("click", () => setView(button.dataset.view));
+      });
+      document.querySelectorAll("th").forEach(th => {
+        th.addEventListener("click", () => {
+          const key = th.dataset.key;
+          sortDirection = sortKey === key && sortDirection === "desc" ? "asc" : "desc";
+          sortKey = key;
+          renderRows();
+        });
+      });
+
+      renderWindowButtons();
+      setView("pct_change");
+      setInterval(loadRows, 30000);
+    </script>
+  </body>
+</html>

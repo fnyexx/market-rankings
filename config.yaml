@@ -1,0 +1,17 @@
+db_path: data/market_rankings.sqlite3
+okx_base_url: https://www.okx.com
+okx_ws_url: wss://ws.okx.com:8443/ws/v5/public
+quote_ccy: USDT
+
+# rest: 使用 REST API 轮询 1H K 线
+# websocket: 使用 WebSocket candle1H 推送写入 K 线
+collector_mode: rest
+
+rest_requests_per_second: 2
+candles_limit: 25
+ranking_interval_seconds: 600
+instruments_refresh_seconds: 3600
+
+ws_subscribe_batch_size: 50
+ws_reconnect_initial_seconds: 5
+ws_reconnect_max_seconds: 60
