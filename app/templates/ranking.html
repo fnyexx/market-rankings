@@ -203,11 +203,11 @@
 
         <h3>&#28072;&#36300;&#24133;&#25490;&#34892;&#27036;</h3>
         <p>&#25353;&#25351;&#23450;&#26102;&#38388;&#31383;&#21475;&#33719;&#21462;&#28072;&#36300;&#24133;&#26368;&#39640;&#30340;&#21512;&#32422;&#21015;&#34920;&#12290;</p>
-        <pre><code>GET /api/rankings/change?window=24h&amp;limit=50</code></pre>
+        <pre><code>GET /api/rankings/change?window=24h&amp;limit=50&amp;direction=long</code></pre>
 
         <h3>&#20132;&#26131;&#37327;&#25490;&#34892;&#27036;</h3>
         <p>&#25353;&#25351;&#23450;&#26102;&#38388;&#31383;&#21475;&#33719;&#21462;&#35745;&#20215;&#36135;&#24065;&#25104;&#20132;&#37327;&#26368;&#39640;&#30340;&#21512;&#32422;&#21015;&#34920;&#65292;&#20363;&#22914; USDT &#25104;&#20132;&#37327;&#12290;</p>
-        <pre><code>GET /api/rankings/volume?window=24h&amp;limit=50</code></pre>
+        <pre><code>GET /api/rankings/volume?window=24h&amp;limit=50&amp;direction=short</code></pre>
 
         <h3>&#35831;&#27714;&#21442;&#25968;</h3>
         <table>
@@ -234,6 +234,13 @@
               <td>&#21542;</td>
               <td><code>50</code></td>
               <td>&#36820;&#22238;&#25490;&#34892;&#26465;&#25968;&#12290;&#21462;&#20540;&#33539;&#22260;&#65306;<code>1</code> &#21040; <code>500</code>&#12290;</td>
+            </tr>
+            <tr>
+              <td><code>direction</code></td>
+              <td>string</td>
+              <td>&#21542;</td>
+              <td>&#26080;</td>
+              <td>&#25353;&#22810;&#31354;&#26041;&#21521;&#36807;&#28388;&#12290;&#21487;&#36873;&#65306;<code>long</code>&#12289;<code>short</code>&#12290;&#19981;&#20256;&#26102;&#36820;&#22238;&#20840;&#37096;&#26041;&#21521;&#12290;</td>
             </tr>
           </tbody>
         </table>
@@ -294,6 +301,11 @@
               <td>&#28072;&#36300;&#24133;&#30334;&#20998;&#27604;&#12290;&#20363;&#22914; <code>2.31</code> &#34920;&#31034;&#19978;&#28072; <code>2.31%</code>&#12290;</td>
             </tr>
             <tr>
+              <td><code>abs_pct_change</code></td>
+              <td>number</td>
+              <td>&#32477;&#23545;&#28072;&#36300;&#24133;&#65292;&#29992;&#20110;&#28072;&#36300;&#24133;&#27036;&#40664;&#35748;&#25490;&#24207;&#12290;</td>
+            </tr>
+            <tr>
               <td><code>volume_quote</code></td>
               <td>number</td>
               <td>&#35745;&#20215;&#36135;&#24065;&#25104;&#20132;&#37327;&#65292;&#40664;&#35748;&#20026; USDT &#21475;&#24452;&#12290;</td>
@@ -330,6 +342,7 @@
         <pre><code>{
   "metric": "pct_change",
   "window": "24h",
+  "direction": "long",
   "limit": 50,
   "collector_mode": "rest",
   "data": [
@@ -338,6 +351,7 @@
       "inst_id": "BTC-USDT-SWAP",
       "direction": "long",
       "pct_change": 2.31,
+      "abs_pct_change": 2.31,
       "volume_quote": 123456789.12,
       "open_price": 62000,
       "close_price": 63432,
@@ -355,7 +369,7 @@
       const windows = ["1h", "2h", "4h", "12h", "24h"];
       let currentWindow = "24h";
       let rows = [];
-      let sortKey = "pct_change";
+      let sortKey = "abs_pct_change";
       let sortDirection = "desc";
 
       const labels = {
@@ -446,7 +460,7 @@
 
         if (view === "api_docs") return;
         metric = view;
-        sortKey = metric === "volume" ? "volume_quote" : "pct_change";
+        sortKey = metric === "volume" ? "volume_quote" : "abs_pct_change";
         sortDirection = "desc";
         loadRows();
       }

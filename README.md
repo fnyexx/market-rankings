@@ -98,19 +98,20 @@ ws_reconnect_max_seconds: 60
 涨跌幅排行榜：
 
 ```text
-GET /api/rankings/change?window=24h&limit=50
+GET /api/rankings/change?window=24h&limit=50&direction=long
 ```
 
 交易量排行榜：
 
 ```text
-GET /api/rankings/volume?window=24h&limit=50
+GET /api/rankings/volume?window=24h&limit=50&direction=short
 ```
 
 参数：
 
 - `window`：可选 `1h`、`2h`、`4h`、`12h`、`24h`，默认 `24h`。
 - `limit`：返回条数，范围 `1` 到 `500`，默认 `50`。
+- `direction`：多空方向，可选 `long`、`short`；不传则返回全部方向。
 
 返回示例：
 
@@ -118,6 +119,7 @@ GET /api/rankings/volume?window=24h&limit=50
 {
   "metric": "pct_change",
   "window": "24h",
+  "direction": "long",
   "limit": 50,
   "collector_mode": "rest",
   "data": [
@@ -126,6 +128,7 @@ GET /api/rankings/volume?window=24h&limit=50
       "inst_id": "BTC-USDT-SWAP",
       "direction": "long",
       "pct_change": 2.31,
+      "abs_pct_change": 2.31,
       "volume_quote": 123456789.12,
       "open_price": 62000,
       "close_price": 63432,

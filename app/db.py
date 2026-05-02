@@ -69,6 +69,7 @@ def init_db() -> None:
             """
         )
         _ensure_column(conn, "rankings", "direction", "TEXT NOT NULL DEFAULT 'long'")
+        _backfill_ranking_directions(conn)
 
 
 def upsert_instruments(instruments: Iterable[dict]) -> None:
@@ -174,18 +175,21 @@ def replace_rankings(rows: Iterable[tuple]) -> None:
         )
 
 
-def query_rankings(metric: str, window: str, limit: int) -> list[sqlite3.Row]:
-    order_column = "volume_quote" if metric == "volume" else "pct_change"
+def query_rankings(metric: str, window: str, limit: int, direction: str | None = None) -> list[sqlite3.Row]:
+    order_expression = "volume_quote DESC" if metric == "volume" else "ABS(pct_change) DESC"
+    direction_clause = "AND direction = ?" if direction else ""
+    params: tuple = (metric, window, direction, limit) if direction else (metric, window, limit)
     with connect() as conn:
         return conn.execute(
             f"""
             SELECT *
             FROM rankings
             WHERE metric = ? AND window = ?
-            ORDER BY {order_column} DESC
+            {direction_clause}
+            ORDER BY {order_expression}
             LIMIT ?
             """,
-            (metric, window, limit),
+            params,
         ).fetchall()
 
 
@@ -200,3 +204,15 @@ def _ensure_column(conn: sqlite3.Connection, table: str, column: str, definition
     if any(row["name"] == column for row in columns):
         return
     conn.execute(f"ALTER TABLE {table} ADD COLUMN {column} {definition}")
+
+
+def _backfill_ranking_directions(conn: sqlite3.Connection) -> None:
+    conn.execute(
+        """
+        UPDATE rankings
+        SET direction = CASE
+            WHEN pct_change < 0 THEN 'short'
+            ELSE 'long'
+        END
+        """
+    )

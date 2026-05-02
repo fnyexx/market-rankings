@@ -126,6 +126,7 @@ GET /api/v5/market/candles?instId=BTC-USDT-SWAP&bar=1H&limit=25
 - `inst_id`
 - `direction`：多空方向，`long` 表示多，`short` 表示空
 - `pct_change`
+- `abs_pct_change`：绝对涨跌幅，涨跌幅榜默认按这个字段排序
 - `volume_quote`
 - `open_price`
 - `close_price`
@@ -161,6 +162,12 @@ volume_quote = sum(volume_quote)
 
 当前只使用 `confirmed = 1` 的已确认 K 线参与计算。
 
+涨跌幅榜默认按绝对涨跌幅排序：
+
+```text
+ORDER BY ABS(pct_change) DESC
+```
+
 多空方向按涨跌幅判断：
 
 ```text
@@ -186,14 +193,15 @@ pct_change < 0  => short
 ## API
 
 ```text
-GET /api/rankings/change?window=24h&limit=50
-GET /api/rankings/volume?window=24h&limit=50
+GET /api/rankings/change?window=24h&limit=50&direction=long
+GET /api/rankings/volume?window=24h&limit=50&direction=short
 ```
 
 参数：
 
 - `window`：`1h`、`2h`、`4h`、`12h`、`24h`
 - `limit`：返回数量，范围 `1` 到 `500`
+- `direction`：多空方向，可选 `long`、`short`；不传则返回全部方向
 
 ## 后续优化
 
