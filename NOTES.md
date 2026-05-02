@@ -24,6 +24,8 @@
 示例：
 
 ```yaml
+host: 127.0.0.1
+port: 8000
 collector_mode: rest
 quote_ccy: USDT
 rest_requests_per_second: 2

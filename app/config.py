@@ -38,6 +38,8 @@ def _float_env(name: str, default: float) -> float:
 
 @dataclass(frozen=True)
 class Settings:
+    host: str = str(_value("HOST", "127.0.0.1"))
+    port: int = _int_env("PORT", 8000)
     db_path: Path = Path(_value("DB_PATH", "data/market_rankings.sqlite3"))
     okx_base_url: str = str(_value("OKX_BASE_URL", "https://www.okx.com"))
     okx_ws_url: str = str(_value("OKX_WS_URL", "wss://ws.okx.com:8443/ws/v5/public"))

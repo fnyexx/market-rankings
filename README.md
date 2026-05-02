@@ -7,7 +7,7 @@ OKX 永续合约行情排行榜 Web 程序。程序使用 SQLite 保存 1H K 线
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\pip install -r requirements.txt
-.\.venv\Scripts\uvicorn app.main:app --reload
+.\.venv\Scripts\python run.py
 ```
 
 打开：
@@ -32,6 +32,8 @@ python -m venv .venv
 常用配置：
 
 ```yaml
+host: 127.0.0.1
+port: 8000
 collector_mode: rest
 quote_ccy: USDT
 rest_requests_per_second: 2
@@ -138,6 +140,8 @@ GET /api/rankings/volume?window=24h&limit=50
 
 | 配置项 | 默认值 | 说明 |
 | --- | --- | --- |
+| `host` | `127.0.0.1` | Web 服务监听地址 |
+| `port` | `8000` | Web 服务监听端口 |
 | `db_path` | `data/market_rankings.sqlite3` | SQLite 数据库路径 |
 | `okx_base_url` | `https://www.okx.com` | OKX REST API 地址 |
 | `okx_ws_url` | `wss://ws.okx.com:8443/ws/v5/public` | OKX 公共 WebSocket 地址 |

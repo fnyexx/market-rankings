@@ -1,17 +1,51 @@
+# Web 服务监听地址。
+# 本机访问使用 127.0.0.1；如果需要局域网访问，可改为 0.0.0.0。
+host: 127.0.0.1
+
+# Web 服务监听端口。
+port: 8000
+
+# SQLite 数据库文件路径。
 db_path: data/market_rankings.sqlite3
+
+# OKX REST API 基础地址。
 okx_base_url: https://www.okx.com
+
+# OKX 公共 WebSocket 地址，用于订阅 candle1H。
 okx_ws_url: wss://ws.okx.com:8443/ws/v5/public
+
+# 计价货币。程序会筛选 quoteCcy 或 settleCcy 等于该值的永续合约。
+# 常用值：USDT、USDC。
 quote_ccy: USDT
 
-# rest: 使用 REST API 轮询 1H K 线
-# websocket: 使用 WebSocket candle1H 推送写入 K 线
+# K 线采集模式。
+# rest: 使用 REST API 轮询所有合约的 1H K 线。
+# websocket: 使用 WebSocket candle1H 推送写入 K 线，不用 REST 补历史 K 线。
 collector_mode: rest
 
+# REST 模式请求频率，单位：次/秒。
+# 例如 2 表示每秒最多请求 2 次。
 rest_requests_per_second: 2
+
+# REST 模式每个合约每次拉取的 1H K 线数量。
+# 24h 排行至少需要 24 条；这里默认 25 条，留 1 条冗余。
 candles_limit: 25
+
+# 排行榜计算间隔，单位：秒。
+# 默认 600 秒，即每 10 分钟计算一次。
 ranking_interval_seconds: 600
+
+# REST 模式下合约列表刷新间隔，单位：秒。
+# 默认 3600 秒，即每 1 小时刷新一次。
 instruments_refresh_seconds: 3600
 
+# WebSocket 模式每次 subscribe 请求包含的合约数量。
+# 合约较多时分批订阅，避免单条订阅消息过大。
 ws_subscribe_batch_size: 50
+
+# WebSocket 断线后的初始重连等待时间，单位：秒。
 ws_reconnect_initial_seconds: 5
+
+# WebSocket 断线后的最大重连等待时间，单位：秒。
+# 重连失败后等待时间会逐步翻倍，但不会超过该值。
 ws_reconnect_max_seconds: 60
