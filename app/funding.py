@@ -32,7 +32,6 @@ async def refresh_funding_rates(client: OkxClient | None = None) -> int:
                 db.update_instrument_funding(
                     inst_id=inst_id,
                     funding_rate=_optional_float(item.get("fundingRate")),
-                    next_funding_rate=_optional_float(item.get("nextFundingRate")),
                     funding_time=_optional_int(item.get("fundingTime")),
                     next_funding_time=_optional_int(item.get("nextFundingTime")),
                 )

@@ -144,7 +144,6 @@ def _ranking_response(
                 "open_price": row["open_price"],
                 "close_price": row["close_price"],
                 "funding_rate": row["funding_rate"],
-                "next_funding_rate": row["next_funding_rate"],
                 "funding_interval_hours": row["funding_interval_hours"],
                 "next_funding_time": row["next_funding_time"],
                 "funding_updated_at": row["funding_updated_at"],

@@ -26,7 +26,6 @@ def init_db() -> None:
               settle_ccy TEXT,
               state TEXT,
               funding_rate REAL,
-              next_funding_rate REAL,
               funding_time INTEGER,
               next_funding_time INTEGER,
               funding_interval_hours REAL,
@@ -74,7 +73,6 @@ def init_db() -> None:
         )
         _ensure_column(conn, "rankings", "direction", "TEXT NOT NULL DEFAULT 'long'")
         _ensure_column(conn, "instruments", "funding_rate", "REAL")
-        _ensure_column(conn, "instruments", "next_funding_rate", "REAL")
         _ensure_column(conn, "instruments", "funding_time", "INTEGER")
         _ensure_column(conn, "instruments", "next_funding_time", "INTEGER")
         _ensure_column(conn, "instruments", "funding_interval_hours", "REAL")
@@ -132,7 +130,7 @@ def list_instruments(query: str = "", limit: int = 500) -> list[sqlite3.Row]:
                 """
                 SELECT
                   inst_id, base_ccy, quote_ccy, settle_ccy, state,
-                  funding_rate, next_funding_rate, funding_time, next_funding_time,
+                  funding_rate, funding_time, next_funding_time,
                   funding_interval_hours, funding_updated_at, updated_at
                 FROM instruments
                 WHERE state = 'live' AND UPPER(inst_id) LIKE ?
@@ -145,7 +143,7 @@ def list_instruments(query: str = "", limit: int = 500) -> list[sqlite3.Row]:
             """
             SELECT
               inst_id, base_ccy, quote_ccy, settle_ccy, state,
-              funding_rate, next_funding_rate, funding_time, next_funding_time,
+              funding_rate, funding_time, next_funding_time,
               funding_interval_hours, funding_updated_at, updated_at
             FROM instruments
             WHERE state = 'live'
@@ -274,7 +272,6 @@ def _ranking_order_expression(sort_by_funding_rate: bool, sort_by_next_funding_t
 def update_instrument_funding(
     inst_id: str,
     funding_rate: float | None,
-    next_funding_rate: float | None,
     funding_time: int | None,
     next_funding_time: int | None,
 ) -> None:
@@ -287,7 +284,6 @@ def update_instrument_funding(
             UPDATE instruments
             SET
               funding_rate = ?,
-              next_funding_rate = ?,
               funding_time = ?,
               next_funding_time = ?,
               funding_interval_hours = ?,
@@ -296,7 +292,6 @@ def update_instrument_funding(
             """,
             (
                 funding_rate,
-                next_funding_rate,
                 funding_time,
                 next_funding_time,
                 interval_hours,

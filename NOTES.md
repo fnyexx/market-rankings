@@ -94,7 +94,6 @@ GET /api/v5/market/candles?instId=BTC-USDT-SWAP&bar=1H&limit=25
 - `state`
 - `updated_at`
 - `funding_rate`
-- `next_funding_rate`
 - `funding_time`
 - `next_funding_time`
 - `funding_interval_hours`
@@ -188,7 +187,7 @@ pct_change < 0  => short
 - 合约搜索
 - 自动刷新
 - K 线数据菜单默认选择 `BTC-USDT-SWAP`，只有选中合约后才查询本地 K 线数据
-- 排行榜展示资金费率、预估资金费率、结算周期、下次结算时间
+- 排行榜展示资金费率、结算周期、下次结算时间
 - 排行榜标题区域展示当前窗口下所有币种的多方、空方、合计数量，计数由后端统计，不受页面 `limit=200` 限制
 
 ## API
