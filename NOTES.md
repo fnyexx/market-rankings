@@ -187,7 +187,7 @@ pct_change < 0  => short
 - 合约搜索
 - 自动刷新
 - K 线数据菜单默认选择 `BTC-USDT-SWAP`，只有选中合约后才查询本地 K 线数据
-- 排行榜展示资金费率、结算周期、下次结算时间
+- 排行榜展示资金费率、结算周期、当次结算时间、下次结算时间
 - 排行榜标题区域展示当前窗口下所有币种的多方、空方、合计数量，计数由后端统计，不受页面 `limit=200` 限制
 
 ## API
@@ -204,7 +204,7 @@ GET /api/candles?inst_id=BTC-USDT-SWAP&limit=100
 - `limit`：返回数量，范围 `1` 到 `500`
 - `direction`：多空方向，可选 `long`、`short`；不传则返回全部方向
 - `sort_by_funding_rate`：是否按资金费率绝对值从高到低排序
-- `sort_by_next_funding_time`：是否按下次资金费结算时间从近到远排序；若两个排序参数都为 `true`，优先按下次结算时间排序
+- `sort_by_funding_time`：是否按当次资金费结算时间从近到远排序；若两个排序参数都为 `true`，优先按当次结算时间排序
 - `query`：合约搜索关键词，用于合约列表接口
 - `inst_id`：OKX 合约 ID，用于 K 线查询接口
 

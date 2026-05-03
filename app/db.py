@@ -220,11 +220,11 @@ def query_rankings(
     limit: int,
     direction: str | None = None,
     sort_by_funding_rate: bool = False,
-    sort_by_next_funding_time: bool = False,
+    sort_by_funding_time: bool = False,
 ) -> list[sqlite3.Row]:
     direction_clause = "AND direction = ?" if direction else ""
     params: tuple = (window, direction, limit) if direction else (window, limit)
-    order_expression = _ranking_order_expression(sort_by_funding_rate, sort_by_next_funding_time)
+    order_expression = _ranking_order_expression(sort_by_funding_rate, sort_by_funding_time)
     with connect() as conn:
         return conn.execute(
             f"""
@@ -259,11 +259,11 @@ def count_ranking_directions(window: str) -> dict[str, int]:
     return counts
 
 
-def _ranking_order_expression(sort_by_funding_rate: bool, sort_by_next_funding_time: bool) -> str:
-    if sort_by_next_funding_time and sort_by_funding_rate:
-        return "next_funding_time IS NULL, next_funding_time ASC, funding_rate IS NULL, ABS(funding_rate) DESC, ABS(pct_change) DESC"
-    if sort_by_next_funding_time:
-        return "next_funding_time IS NULL, next_funding_time ASC, ABS(pct_change) DESC"
+def _ranking_order_expression(sort_by_funding_rate: bool, sort_by_funding_time: bool) -> str:
+    if sort_by_funding_time and sort_by_funding_rate:
+        return "funding_time IS NULL, funding_time ASC, funding_rate IS NULL, ABS(funding_rate) DESC, ABS(pct_change) DESC"
+    if sort_by_funding_time:
+        return "funding_time IS NULL, funding_time ASC, ABS(pct_change) DESC"
     if sort_by_funding_rate:
         return "funding_rate IS NULL, ABS(funding_rate) DESC, ABS(pct_change) DESC"
     return "ABS(pct_change) DESC"

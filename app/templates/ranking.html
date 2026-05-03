@@ -207,6 +207,7 @@
                 <th data-key="abs_pct_change">&#28072;&#36300;&#24133;</th>
                 <th data-key="abs_funding_rate">&#36164;&#37329;&#36153;&#29575;</th>
                 <th data-key="funding_interval_hours">&#32467;&#31639;&#21608;&#26399;</th>
+                <th data-key="funding_time">&#24403;&#27425;&#32467;&#31639;&#26102;&#38388;</th>
                 <th data-key="next_funding_time">&#19979;&#27425;&#32467;&#31639;&#26102;&#38388;</th>
                 <th data-key="open_price">&#24320;&#22987;&#20215;</th>
                 <th data-key="close_price">&#26368;&#26032;&#20215;</th>
@@ -299,11 +300,11 @@
               <td>&#26159;&#21542;&#25353;&#36164;&#37329;&#36153;&#29575;&#20174;&#39640;&#21040;&#20302;&#25490;&#24207;&#12290;</td>
             </tr>
             <tr>
-              <td><code>sort_by_next_funding_time</code></td>
+              <td><code>sort_by_funding_time</code></td>
               <td>boolean</td>
               <td>&#21542;</td>
               <td><code>false</code></td>
-              <td>&#26159;&#21542;&#25353;&#19979;&#27425;&#36164;&#37329;&#36153;&#32467;&#31639;&#26102;&#38388;&#20174;&#36817;&#21040;&#36828;&#25490;&#24207;&#12290;&#33509;&#19982; <code>sort_by_funding_rate</code> &#21516;&#26102;&#20026; <code>true</code>&#65292;&#20248;&#20808;&#25353;&#19979;&#27425;&#32467;&#31639;&#26102;&#38388;&#25490;&#24207;&#12290;</td>
+              <td>&#26159;&#21542;&#25353;&#24403;&#27425;&#36164;&#37329;&#36153;&#32467;&#31639;&#26102;&#38388;&#20174;&#36817;&#21040;&#36828;&#25490;&#24207;&#12290;&#33509;&#19982; <code>sort_by_funding_rate</code> &#21516;&#26102;&#20026; <code>true</code>&#65292;&#20248;&#20808;&#25353;&#24403;&#27425;&#32467;&#31639;&#26102;&#38388;&#25490;&#24207;&#12290;</td>
             </tr>
           </tbody>
         </table>
@@ -379,6 +380,11 @@
               <td>&#36164;&#37329;&#36153;&#32467;&#31639;&#21608;&#26399;&#65292;&#21333;&#20301;&#65306;&#23567;&#26102;&#12290;</td>
             </tr>
             <tr>
+              <td><code>funding_time</code></td>
+              <td>integer | null</td>
+              <td>&#24403;&#27425;&#36164;&#37329;&#36153;&#32467;&#31639;&#26102;&#38388;&#65292;Unix &#27627;&#31186;&#26102;&#38388;&#25139;&#12290;</td>
+            </tr>
+            <tr>
               <td><code>next_funding_time</code></td>
               <td>integer | null</td>
               <td>&#19979;&#27425;&#36164;&#37329;&#36153;&#32467;&#31639;&#26102;&#38388;&#65292;Unix &#27627;&#31186;&#26102;&#38388;&#25139;&#12290;</td>
@@ -422,7 +428,7 @@
     "total": 200
   },
   "sort_by_funding_rate": true,
-  "sort_by_next_funding_time": false,
+  "sort_by_funding_time": false,
   "limit": 50,
   "collector_mode": "rest",
   "data": [
@@ -435,6 +441,7 @@
       "funding_rate": 0.0001,
       "abs_funding_rate": 0.0001,
       "funding_interval_hours": 8,
+      "funding_time": 1777756800000,
       "next_funding_time": 1777785600000,
       "open_price": 62000,
       "close_price": 63432,
@@ -583,6 +590,7 @@
             <td class="${changeClass}">${fmtNumber.format(displayPctChange)}%</td>
             <td>${formatRate(row.funding_rate)}</td>
             <td>${formatInterval(row.funding_interval_hours)}</td>
+            <td>${formatMsTime(row.funding_time)}</td>
             <td>${formatMsTime(row.next_funding_time)}</td>
             <td>${fmtNumber.format(row.open_price)}</td>
             <td>${fmtNumber.format(row.close_price)}</td>
