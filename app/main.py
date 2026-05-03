@@ -9,6 +9,7 @@ from fastapi.templating import Jinja2Templates
 from app import db
 from app.collector import RestCollector, WebSocketCollector
 from app.config import settings
+from app.funding import funding_loop
 from app.rankings import WINDOWS, ranking_loop
 
 logging.basicConfig(level=logging.INFO)
@@ -23,6 +24,7 @@ async def startup() -> None:
     collector = WebSocketCollector() if settings.collector_mode == "websocket" else RestCollector()
     asyncio.create_task(collector.run_forever())
     asyncio.create_task(ranking_loop())
+    asyncio.create_task(funding_loop())
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -41,30 +43,21 @@ async def change_page(request: Request) -> HTMLResponse:
     )
 
 
-@app.get("/rankings/volume", response_class=HTMLResponse)
-async def volume_page(request: Request) -> HTMLResponse:
-    return templates.TemplateResponse(
-        "ranking.html",
-        {"request": request, "title": "Market Rankings"},
-    )
-
-
 @app.get("/api/rankings/change")
 async def api_change(
     window: str = Query("24h"),
     limit: int = Query(50, ge=1, le=500),
     direction: str | None = Query(None),
+    sort_by_funding_rate: bool = Query(False),
+    sort_by_next_funding_time: bool = Query(False),
 ) -> dict:
-    return _ranking_response("pct_change", window, limit, direction)
-
-
-@app.get("/api/rankings/volume")
-async def api_volume(
-    window: str = Query("24h"),
-    limit: int = Query(50, ge=1, le=500),
-    direction: str | None = Query(None),
-) -> dict:
-    return _ranking_response("volume", window, limit, direction)
+    return _ranking_response(
+        window,
+        limit,
+        direction,
+        sort_by_funding_rate,
+        sort_by_next_funding_time,
+    )
 
 
 @app.get("/api/instruments")
@@ -119,16 +112,26 @@ async def api_candles(
     }
 
 
-def _ranking_response(metric: str, window: str, limit: int, direction: str | None = None) -> dict:
+def _ranking_response(
+    window: str,
+    limit: int,
+    direction: str | None = None,
+    sort_by_funding_rate: bool = False,
+    sort_by_next_funding_time: bool = False,
+) -> dict:
     if window not in WINDOWS:
         raise HTTPException(status_code=400, detail=f"window must be one of {', '.join(WINDOWS)}")
     if direction not in (None, "long", "short"):
         raise HTTPException(status_code=400, detail="direction must be long or short")
-    rows = db.query_rankings(metric, window, limit, direction)
+    rows = db.query_rankings(window, limit, direction, sort_by_funding_rate, sort_by_next_funding_time)
+    direction_counts = db.count_ranking_directions(window)
     return {
-        "metric": metric,
+        "metric": "pct_change",
         "window": window,
         "direction": direction,
+        "direction_counts": direction_counts,
+        "sort_by_funding_rate": sort_by_funding_rate,
+        "sort_by_next_funding_time": sort_by_next_funding_time,
         "limit": limit,
         "collector_mode": settings.collector_mode,
         "data": [
@@ -138,9 +141,13 @@ def _ranking_response(metric: str, window: str, limit: int, direction: str | Non
                 "direction": row["direction"],
                 "pct_change": row["pct_change"],
                 "abs_pct_change": abs(row["pct_change"] or 0),
-                "volume_quote": row["volume_quote"],
                 "open_price": row["open_price"],
                 "close_price": row["close_price"],
+                "funding_rate": row["funding_rate"],
+                "next_funding_rate": row["next_funding_rate"],
+                "funding_interval_hours": row["funding_interval_hours"],
+                "next_funding_time": row["next_funding_time"],
+                "funding_updated_at": row["funding_updated_at"],
                 "start_ts": row["start_ts"],
                 "end_ts": row["end_ts"],
                 "calculated_at": row["calculated_at"],

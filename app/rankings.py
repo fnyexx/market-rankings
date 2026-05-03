@@ -35,20 +35,17 @@ def calculate_rankings() -> int:
                     continue
                 pct_change = (close_price - open_price) / open_price * 100
                 direction = "long" if pct_change >= 0 else "short"
-                volume_quote = sum(row["volume_quote"] or 0 for row in scoped)
                 common = (
                     window,
                     inst_id,
                     direction,
                     pct_change,
-                    volume_quote,
                     open_price,
                     close_price,
                     scoped[0]["ts"],
                     scoped[-1]["ts"],
                 )
                 rows.append(("pct_change", *common))
-                rows.append(("volume", *common))
     db.replace_rankings(rows)
     return len(rows)
 

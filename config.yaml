@@ -39,6 +39,13 @@ ranking_interval_seconds: 600
 # 默认 3600 秒，即每 1 小时刷新一次。
 instruments_refresh_seconds: 3600
 
+# 资金费率刷新间隔，单位：秒。
+# 默认 600 秒，即每 10 分钟刷新一次。
+funding_refresh_seconds: 600
+
+# 资金费率接口请求频率，单位：次/秒。
+funding_requests_per_second: 2
+
 # WebSocket 模式每次 subscribe 请求包含的合约数量。
 # 合约较多时分批订阅，避免单条订阅消息过大。
 ws_subscribe_batch_size: 50

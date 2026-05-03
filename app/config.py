@@ -49,6 +49,8 @@ class Settings:
     candles_limit: int = _int_env("CANDLES_LIMIT", 25)
     ranking_interval_seconds: int = _int_env("RANKING_INTERVAL_SECONDS", 600)
     instruments_refresh_seconds: int = _int_env("INSTRUMENTS_REFRESH_SECONDS", 3600)
+    funding_refresh_seconds: int = _int_env("FUNDING_REFRESH_SECONDS", 600)
+    funding_requests_per_second: float = _float_env("FUNDING_REQUESTS_PER_SECOND", 2.0)
     ws_subscribe_batch_size: int = _int_env("WS_SUBSCRIBE_BATCH_SIZE", 50)
     ws_reconnect_initial_seconds: int = _int_env("WS_RECONNECT_INITIAL_SECONDS", 5)
     ws_reconnect_max_seconds: int = _int_env("WS_RECONNECT_MAX_SECONDS", 60)

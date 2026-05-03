@@ -1,6 +1,6 @@
 # Market Rankings
 
-OKX 永续合约行情排行榜 Web 程序。程序使用 SQLite 保存 1H K 线池，并计算 `1h`、`2h`、`4h`、`12h`、`24h` 的涨跌幅排行榜和计价货币成交量排行榜，例如 USDT 成交量。
+OKX 永续合约行情排行榜 Web 程序。程序使用 SQLite 保存 1H K 线池，并计算 `1h`、`2h`、`4h`、`12h`、`24h` 的涨跌幅排行榜。
 
 ## 运行
 
@@ -14,17 +14,15 @@ python -m venv .venv
 
 - http://127.0.0.1:8000/
 
-主页面有四个菜单：
+主页面有三个菜单：
 
 - 涨跌幅
-- 交易量
 - K 线数据
 - API 文档
 
 兼容入口仍保留，并渲染同一个页面：
 
 - http://127.0.0.1:8000/rankings/change
-- http://127.0.0.1:8000/rankings/volume
 
 ## 配置
 
@@ -99,13 +97,7 @@ ws_reconnect_max_seconds: 60
 涨跌幅排行榜：
 
 ```text
-GET /api/rankings/change?window=24h&limit=50&direction=long
-```
-
-交易量排行榜：
-
-```text
-GET /api/rankings/volume?window=24h&limit=50&direction=short
+GET /api/rankings/change?window=24h&limit=50&direction=long&sort_by_funding_rate=true
 ```
 
 合约列表：
@@ -125,6 +117,8 @@ GET /api/candles?inst_id=BTC-USDT-SWAP&limit=100
 - `window`：可选 `1h`、`2h`、`4h`、`12h`、`24h`，默认 `24h`。
 - `limit`：返回条数，范围 `1` 到 `500`，默认 `50`。
 - `direction`：多空方向，可选 `long`、`short`；不传则返回全部方向。
+- `sort_by_funding_rate`：是否按资金费率从高到低排序，默认 `false`。
+- `sort_by_next_funding_time`：是否按下次资金费结算时间从近到远排序，默认 `false`。如果两个排序参数都为 `true`，优先按下次结算时间排序。
 - `query`：合约搜索关键词，用于 `/api/instruments`。
 - `inst_id`：OKX 合约 ID，用于 `/api/candles`，例如 `BTC-USDT-SWAP`。
 
@@ -135,6 +129,13 @@ GET /api/candles?inst_id=BTC-USDT-SWAP&limit=100
   "metric": "pct_change",
   "window": "24h",
   "direction": "long",
+  "direction_counts": {
+    "long": 120,
+    "short": 80,
+    "total": 200
+  },
+  "sort_by_funding_rate": true,
+  "sort_by_next_funding_time": false,
   "limit": 50,
   "collector_mode": "rest",
   "data": [
@@ -144,7 +145,6 @@ GET /api/candles?inst_id=BTC-USDT-SWAP&limit=100
       "direction": "long",
       "pct_change": 2.31,
       "abs_pct_change": 2.31,
-      "volume_quote": 123456789.12,
       "open_price": 62000,
       "close_price": 63432,
       "start_ts": 1777647600000,
@@ -170,6 +170,8 @@ GET /api/candles?inst_id=BTC-USDT-SWAP&limit=100
 | `candles_limit` | `25` | 每次拉取的 1H K 线数量 |
 | `ranking_interval_seconds` | `600` | 排行榜计算间隔 |
 | `instruments_refresh_seconds` | `3600` | 合约列表刷新间隔 |
+| `funding_refresh_seconds` | `600` | 资金费率刷新间隔 |
+| `funding_requests_per_second` | `2` | 资金费率接口请求频率 |
 | `ws_subscribe_batch_size` | `50` | WebSocket 每批订阅数量 |
 | `ws_reconnect_initial_seconds` | `5` | WebSocket 初始重连等待秒数 |
 | `ws_reconnect_max_seconds` | `60` | WebSocket 最大重连等待秒数 |

@@ -6,8 +6,7 @@
 
 排行榜分两类：
 
-- 涨跌幅排行榜：统计 `1h`、`2h`、`4h`、`12h`、`24h` 的涨跌幅。
-- 交易量排行榜：统计 `1h`、`2h`、`4h`、`12h`、`24h` 的计价货币成交量，例如 USDT。
+排行榜只保留涨跌幅排行榜：统计 `1h`、`2h`、`4h`、`12h`、`24h` 的涨跌幅。
 
 ## 总体架构
 
@@ -94,6 +93,12 @@ GET /api/v5/market/candles?instId=BTC-USDT-SWAP&bar=1H&limit=25
 - `settle_ccy`
 - `state`
 - `updated_at`
+- `funding_rate`
+- `next_funding_rate`
+- `funding_time`
+- `next_funding_time`
+- `funding_interval_hours`
+- `funding_updated_at`
 
 ### candles_1h
 
@@ -121,13 +126,12 @@ GET /api/v5/market/candles?instId=BTC-USDT-SWAP&bar=1H&limit=25
 
 保存计算后的排行榜：
 
-- `metric`：`pct_change` 或 `volume`
+- `metric`：固定为 `pct_change`
 - `window`：`1h`、`2h`、`4h`、`12h`、`24h`
 - `inst_id`
 - `direction`：多空方向，`long` 表示多，`short` 表示空
 - `pct_change`
 - `abs_pct_change`：绝对涨跌幅，涨跌幅榜默认按这个字段排序
-- `volume_quote`
 - `open_price`
 - `close_price`
 - `start_ts`
@@ -154,12 +158,6 @@ ranking_interval_seconds: 600
 pct_change = (end_close - start_open) / start_open * 100
 ```
 
-交易量公式：
-
-```text
-volume_quote = sum(volume_quote)
-```
-
 当前只使用 `confirmed = 1` 的已确认 K 线参与计算。
 
 涨跌幅榜默认按绝对涨跌幅排序：
@@ -180,8 +178,8 @@ pct_change < 0  => short
 当前页面：
 
 - `/`：统一排行榜页面。
-- 页面顶部四个菜单：涨跌幅、交易量、K 线数据、API 文档。
-- `/rankings/change` 和 `/rankings/volume` 保留为兼容入口，仍渲染同一个页面。
+- 页面顶部三个菜单：涨跌幅、K 线数据、API 文档。
+- `/rankings/change` 保留为兼容入口，仍渲染同一个页面。
 
 页面能力：
 
@@ -190,12 +188,13 @@ pct_change < 0  => short
 - 合约搜索
 - 自动刷新
 - K 线数据菜单默认选择 `BTC-USDT-SWAP`，只有选中合约后才查询本地 K 线数据
+- 排行榜展示资金费率、预估资金费率、结算周期、下次结算时间
+- 排行榜标题区域展示当前窗口下所有币种的多方、空方、合计数量，计数由后端统计，不受页面 `limit=200` 限制
 
 ## API
 
 ```text
-GET /api/rankings/change?window=24h&limit=50&direction=long
-GET /api/rankings/volume?window=24h&limit=50&direction=short
+GET /api/rankings/change?window=24h&limit=50&direction=long&sort_by_funding_rate=true
 GET /api/instruments?query=BTC&limit=50
 GET /api/candles?inst_id=BTC-USDT-SWAP&limit=100
 ```
@@ -205,6 +204,8 @@ GET /api/candles?inst_id=BTC-USDT-SWAP&limit=100
 - `window`：`1h`、`2h`、`4h`、`12h`、`24h`
 - `limit`：返回数量，范围 `1` 到 `500`
 - `direction`：多空方向，可选 `long`、`short`；不传则返回全部方向
+- `sort_by_funding_rate`：是否按资金费率从高到低排序
+- `sort_by_next_funding_time`：是否按下次资金费结算时间从近到远排序；若两个排序参数都为 `true`，优先按下次结算时间排序
 - `query`：合约搜索关键词，用于合约列表接口
 - `inst_id`：OKX 合约 ID，用于 K 线查询接口
 

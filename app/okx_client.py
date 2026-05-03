@@ -38,6 +38,15 @@ class OkxClient:
         _raise_for_okx_error(payload)
         return payload["data"]
 
+    async def get_funding_rate(self, inst_id: str) -> dict | None:
+        response = await self._client.get("/api/v5/public/funding-rate", params={"instId": inst_id})
+        response.raise_for_status()
+        payload = response.json()
+        _raise_for_okx_error(payload)
+        if not payload["data"]:
+            return None
+        return payload["data"][0]
+
 
 async def stream_1h_candles(inst_ids: list[str]) -> AsyncIterator[tuple[str, list[str]]]:
     async with websockets.connect(settings.okx_ws_url, ping_interval=20, ping_timeout=20) as ws:

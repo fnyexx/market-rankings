@@ -68,6 +68,19 @@
         flex-wrap: wrap;
         gap: 8px;
       }
+      .ranking-summary {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        color: #344054;
+        font-size: 14px;
+      }
+      .summary-item {
+        background: #ffffff;
+        border: 1px solid #dde3ea;
+        border-radius: 6px;
+        padding: 8px 12px;
+      }
       input {
         border: 1px solid #c9d3df;
         border-radius: 6px;
@@ -172,7 +185,6 @@
         <h1 id="page-title">{{ title }}</h1>
         <nav aria-label="ranking navigation">
           <button type="button" class="top-menu active" data-view="pct_change">&#28072;&#36300;&#24133;</button>
-          <button type="button" class="top-menu" data-view="volume">&#20132;&#26131;&#37327;</button>
           <button type="button" class="top-menu" data-view="candles">K&#32447;&#25968;&#25454;</button>
           <button type="button" class="top-menu" data-view="api_docs">API&#25991;&#26723;</button>
         </nav>
@@ -182,6 +194,7 @@
       <section id="ranking-view">
         <div class="toolbar">
           <div class="windows" id="windows"></div>
+          <div class="ranking-summary" id="direction-summary"></div>
           <input id="search" placeholder="&#25628;&#32034;&#21512;&#32422;&#65292;&#20363;&#22914; BTC">
         </div>
         <div class="table-wrap">
@@ -192,14 +205,17 @@
                 <th data-key="inst_id">&#21512;&#32422;</th>
                 <th data-key="direction">&#26041;&#21521;</th>
                 <th data-key="abs_pct_change">&#28072;&#36300;&#24133;</th>
-                <th data-key="volume_quote">&#25104;&#20132;&#37327; USDT</th>
+                <th data-key="funding_rate">&#36164;&#37329;&#36153;&#29575;</th>
+                <th data-key="next_funding_rate">&#39044;&#20272;&#36164;&#37329;&#36153;&#29575;</th>
+                <th data-key="funding_interval_hours">&#32467;&#31639;&#21608;&#26399;</th>
+                <th data-key="next_funding_time">&#19979;&#27425;&#32467;&#31639;&#26102;&#38388;</th>
                 <th data-key="open_price">&#24320;&#22987;&#20215;</th>
                 <th data-key="close_price">&#26368;&#26032;&#20215;</th>
                 <th data-key="calculated_at">&#35745;&#31639;&#26102;&#38388;</th>
               </tr>
             </thead>
             <tbody id="rows">
-              <tr><td colspan="8" class="muted">&#21152;&#36733;&#20013;</td></tr>
+              <tr><td colspan="11" class="muted">&#21152;&#36733;&#20013;</td></tr>
             </tbody>
           </table>
         </div>
@@ -237,11 +253,7 @@
 
         <h3>&#28072;&#36300;&#24133;&#25490;&#34892;&#27036;</h3>
         <p>&#25353;&#25351;&#23450;&#26102;&#38388;&#31383;&#21475;&#33719;&#21462;&#28072;&#36300;&#24133;&#26368;&#39640;&#30340;&#21512;&#32422;&#21015;&#34920;&#12290;</p>
-        <pre><code>GET /api/rankings/change?window=24h&amp;limit=50&amp;direction=long</code></pre>
-
-        <h3>&#20132;&#26131;&#37327;&#25490;&#34892;&#27036;</h3>
-        <p>&#25353;&#25351;&#23450;&#26102;&#38388;&#31383;&#21475;&#33719;&#21462;&#35745;&#20215;&#36135;&#24065;&#25104;&#20132;&#37327;&#26368;&#39640;&#30340;&#21512;&#32422;&#21015;&#34920;&#65292;&#20363;&#22914; USDT &#25104;&#20132;&#37327;&#12290;</p>
-        <pre><code>GET /api/rankings/volume?window=24h&amp;limit=50&amp;direction=short</code></pre>
+        <pre><code>GET /api/rankings/change?window=24h&amp;limit=50&amp;direction=long&amp;sort_by_funding_rate=true</code></pre>
 
         <h3>K&#32447;&#25968;&#25454;</h3>
         <p>&#26597;&#35810;&#25351;&#23450;&#21512;&#32422;&#30340;&#26412;&#22320; 1H K &#32447;&#25968;&#25454;&#12290;</p>
@@ -280,6 +292,20 @@
               <td>&#26080;</td>
               <td>&#25353;&#22810;&#31354;&#26041;&#21521;&#36807;&#28388;&#12290;&#21487;&#36873;&#65306;<code>long</code>&#12289;<code>short</code>&#12290;&#19981;&#20256;&#26102;&#36820;&#22238;&#20840;&#37096;&#26041;&#21521;&#12290;</td>
             </tr>
+            <tr>
+              <td><code>sort_by_funding_rate</code></td>
+              <td>boolean</td>
+              <td>&#21542;</td>
+              <td><code>false</code></td>
+              <td>&#26159;&#21542;&#25353;&#36164;&#37329;&#36153;&#29575;&#20174;&#39640;&#21040;&#20302;&#25490;&#24207;&#12290;</td>
+            </tr>
+            <tr>
+              <td><code>sort_by_next_funding_time</code></td>
+              <td>boolean</td>
+              <td>&#21542;</td>
+              <td><code>false</code></td>
+              <td>&#26159;&#21542;&#25353;&#19979;&#27425;&#36164;&#37329;&#36153;&#32467;&#31639;&#26102;&#38388;&#20174;&#36817;&#21040;&#36828;&#25490;&#24207;&#12290;&#33509;&#19982; <code>sort_by_funding_rate</code> &#21516;&#26102;&#20026; <code>true</code>&#65292;&#20248;&#20808;&#25353;&#19979;&#27425;&#32467;&#31639;&#26102;&#38388;&#25490;&#24207;&#12290;</td>
+            </tr>
           </tbody>
         </table>
 
@@ -296,7 +322,7 @@
             <tr>
               <td><code>metric</code></td>
               <td>string</td>
-              <td>&#25490;&#34892;&#25351;&#26631;&#12290;<code>pct_change</code> &#34920;&#31034;&#28072;&#36300;&#24133;&#65292;<code>volume</code> &#34920;&#31034;&#20132;&#26131;&#37327;&#12290;</td>
+              <td>&#25490;&#34892;&#25351;&#26631;&#65292;&#22266;&#23450;&#20026; <code>pct_change</code>&#12290;</td>
             </tr>
             <tr>
               <td><code>window</code></td>
@@ -344,9 +370,24 @@
               <td>&#32477;&#23545;&#28072;&#36300;&#24133;&#65292;&#29992;&#20110;&#28072;&#36300;&#24133;&#27036;&#40664;&#35748;&#25490;&#24207;&#12290;</td>
             </tr>
             <tr>
-              <td><code>volume_quote</code></td>
-              <td>number</td>
-              <td>&#35745;&#20215;&#36135;&#24065;&#25104;&#20132;&#37327;&#65292;&#40664;&#35748;&#20026; USDT &#21475;&#24452;&#12290;</td>
+              <td><code>funding_rate</code></td>
+              <td>number | null</td>
+              <td>&#24403;&#21069;&#36164;&#37329;&#36153;&#29575;&#12290;</td>
+            </tr>
+            <tr>
+              <td><code>next_funding_rate</code></td>
+              <td>number | null</td>
+              <td>&#19979;&#19968;&#26399;&#39044;&#20272;&#36164;&#37329;&#36153;&#29575;&#12290;</td>
+            </tr>
+            <tr>
+              <td><code>funding_interval_hours</code></td>
+              <td>number | null</td>
+              <td>&#36164;&#37329;&#36153;&#32467;&#31639;&#21608;&#26399;&#65292;&#21333;&#20301;&#65306;&#23567;&#26102;&#12290;</td>
+            </tr>
+            <tr>
+              <td><code>next_funding_time</code></td>
+              <td>integer | null</td>
+              <td>&#19979;&#27425;&#36164;&#37329;&#36153;&#32467;&#31639;&#26102;&#38388;&#65292;Unix &#27627;&#31186;&#26102;&#38388;&#25139;&#12290;</td>
             </tr>
             <tr>
               <td><code>open_price</code></td>
@@ -381,6 +422,13 @@
   "metric": "pct_change",
   "window": "24h",
   "direction": "long",
+  "direction_counts": {
+    "long": 120,
+    "short": 80,
+    "total": 200
+  },
+  "sort_by_funding_rate": true,
+  "sort_by_next_funding_time": false,
   "limit": 50,
   "collector_mode": "rest",
   "data": [
@@ -390,7 +438,10 @@
       "direction": "long",
       "pct_change": 2.31,
       "abs_pct_change": 2.31,
-      "volume_quote": 123456789.12,
+      "funding_rate": 0.0001,
+      "next_funding_rate": 0.00008,
+      "funding_interval_hours": 8,
+      "next_funding_time": 1777785600000,
       "open_price": 62000,
       "close_price": 63432,
       "start_ts": 1777647600000,
@@ -402,7 +453,6 @@
       </section>
     </main>
     <script>
-      let metric = "pct_change";
       let currentView = "pct_change";
       const windows = ["1h", "2h", "4h", "12h", "24h"];
       let currentWindow = "24h";
@@ -413,12 +463,12 @@
 
       const labels = {
         pct_change: "\u6da8\u8dcc\u5e45\u6392\u884c\u699c",
-        volume: "\u4ea4\u6613\u91cf\u6392\u884c\u699c",
         candles: "K\u7ebf\u6570\u636e",
         api_docs: "API\u6587\u6863"
       };
       const fmtNumber = new Intl.NumberFormat("zh-CN", { maximumFractionDigits: 4 });
       const fmtVolume = new Intl.NumberFormat("zh-CN", { maximumFractionDigits: 0 });
+      const fmtRate = new Intl.NumberFormat("zh-CN", { maximumFractionDigits: 6 });
 
       function renderWindowButtons() {
         const container = document.getElementById("windows");
@@ -438,11 +488,23 @@
 
       async function loadRows() {
         if (currentView === "api_docs" || currentView === "candles") return;
-        const endpoint = metric === "volume" ? "/api/rankings/volume" : "/api/rankings/change";
-        const response = await fetch(`${endpoint}?window=${currentWindow}&limit=200`);
+        const response = await fetch(`/api/rankings/change?window=${currentWindow}&limit=200`);
         const payload = await response.json();
         rows = payload.data || [];
+        renderDirectionSummary(payload.direction_counts || {});
         renderRows();
+      }
+
+      function renderDirectionSummary(counts) {
+        const container = document.getElementById("direction-summary");
+        const longCount = counts.long || 0;
+        const shortCount = counts.short || 0;
+        const totalCount = counts.total || longCount + shortCount;
+        container.innerHTML = `
+          <span class="summary-item">${currentWindow} \u591a\u65b9 ${longCount}</span>
+          <span class="summary-item">${currentWindow} \u7a7a\u65b9 ${shortCount}</span>
+          <span class="summary-item">\u5408\u8ba1 ${totalCount}</span>
+        `;
       }
 
       async function loadInstruments() {
@@ -510,7 +572,7 @@
 
         tbody.innerHTML = "";
         if (!filtered.length) {
-          tbody.innerHTML = '<tr><td colspan="8" class="muted">\u6682\u65e0\u6570\u636e</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="11" class="muted">\u6682\u65e0\u6570\u636e</td></tr>';
           return;
         }
 
@@ -525,7 +587,10 @@
             <td>${row.inst_id}</td>
             <td class="${directionClass}">${directionLabel}</td>
             <td class="${changeClass}">${fmtNumber.format(displayPctChange)}%</td>
-            <td>${fmtVolume.format(row.volume_quote || 0)}</td>
+            <td>${formatRate(row.funding_rate)}</td>
+            <td>${formatRate(row.next_funding_rate)}</td>
+            <td>${formatInterval(row.funding_interval_hours)}</td>
+            <td>${formatMsTime(row.next_funding_time)}</td>
             <td>${fmtNumber.format(row.open_price)}</td>
             <td>${fmtNumber.format(row.close_price)}</td>
             <td>${formatTime(row.calculated_at)}</td>
@@ -551,6 +616,16 @@
         return new Date(milliseconds).toLocaleString("zh-CN", { hour12: false });
       }
 
+      function formatRate(value) {
+        if (value === null || value === undefined) return "";
+        return `${fmtRate.format(value * 100)}%`;
+      }
+
+      function formatInterval(value) {
+        if (value === null || value === undefined) return "";
+        return `${fmtNumber.format(value)}h`;
+      }
+
       function setView(view) {
         currentView = view;
         document.querySelectorAll(".top-menu").forEach(item => {
@@ -573,8 +648,7 @@
           return;
         }
         if (view === "api_docs") return;
-        metric = view;
-        sortKey = metric === "volume" ? "volume_quote" : "abs_pct_change";
+        sortKey = "abs_pct_change";
         sortDirection = "desc";
         loadRows();
       }
