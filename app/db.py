@@ -261,11 +261,11 @@ def count_ranking_directions(window: str) -> dict[str, int]:
 
 def _ranking_order_expression(sort_by_funding_rate: bool, sort_by_next_funding_time: bool) -> str:
     if sort_by_next_funding_time and sort_by_funding_rate:
-        return "next_funding_time IS NULL, next_funding_time ASC, funding_rate IS NULL, funding_rate DESC, ABS(pct_change) DESC"
+        return "next_funding_time IS NULL, next_funding_time ASC, funding_rate IS NULL, ABS(funding_rate) DESC, ABS(pct_change) DESC"
     if sort_by_next_funding_time:
         return "next_funding_time IS NULL, next_funding_time ASC, ABS(pct_change) DESC"
     if sort_by_funding_rate:
-        return "funding_rate IS NULL, funding_rate DESC, ABS(pct_change) DESC"
+        return "funding_rate IS NULL, ABS(funding_rate) DESC, ABS(pct_change) DESC"
     return "ABS(pct_change) DESC"
 
 

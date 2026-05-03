@@ -117,7 +117,7 @@ GET /api/candles?inst_id=BTC-USDT-SWAP&limit=100
 - `window`：可选 `1h`、`2h`、`4h`、`12h`、`24h`，默认 `24h`。
 - `limit`：返回条数，范围 `1` 到 `500`，默认 `50`。
 - `direction`：多空方向，可选 `long`、`short`；不传则返回全部方向。
-- `sort_by_funding_rate`：是否按资金费率从高到低排序，默认 `false`。
+- `sort_by_funding_rate`：是否按资金费率绝对值从高到低排序，默认 `false`。
 - `sort_by_next_funding_time`：是否按下次资金费结算时间从近到远排序，默认 `false`。如果两个排序参数都为 `true`，优先按下次结算时间排序。
 - `query`：合约搜索关键词，用于 `/api/instruments`。
 - `inst_id`：OKX 合约 ID，用于 `/api/candles`，例如 `BTC-USDT-SWAP`。
