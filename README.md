@@ -128,7 +128,7 @@ GET /api/major-coins/candles?inst_id=BTC-USDT-SWAP&limit=30
 
 - `window`：可选 `1h`、`2h`、`4h`、`12h`、`24h`，默认 `24h`。
 - 主流币 `window`：可选 `1m`、`5m`、`15m`、`30m`，默认 `30m`。
-- `limit`：返回条数，范围 `1` 到 `500`，默认 `50`。
+- `limit`：返回条数，范围 `1` 到 `2000`，默认 `50`。
 - `direction`：多空方向，可选 `long`、`short`；不传则返回全部方向。
 - `sort_by_funding_rate`：是否按资金费率绝对值从高到低排序，默认 `false`。
 - `sort_by_funding_time`：是否按当次资金费结算时间从近到远排序，默认 `false`。如果两个排序参数都为 `true`，优先按当次结算时间排序。

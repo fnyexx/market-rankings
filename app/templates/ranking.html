@@ -301,7 +301,7 @@
               <td>integer</td>
               <td>&#21542;</td>
               <td><code>50</code></td>
-              <td>&#36820;&#22238;&#25490;&#34892;&#26465;&#25968;&#12290;&#21462;&#20540;&#33539;&#22260;&#65306;<code>1</code> &#21040; <code>500</code>&#12290;</td>
+              <td>&#36820;&#22238;&#25490;&#34892;&#26465;&#25968;&#12290;&#21462;&#20540;&#33539;&#22260;&#65306;<code>1</code> &#21040; <code>2000</code>&#12290;</td>
             </tr>
             <tr>
               <td><code>direction</code></td>
@@ -565,7 +565,7 @@
 
       async function loadRows() {
         if (currentView === "api_docs" || currentView === "candles") return;
-        const response = await fetch(`/api/rankings/change?window=${currentWindow}&limit=200`);
+        const response = await fetch(`/api/rankings/change?window=${currentWindow}&limit=2000`);
         const payload = await response.json();
         rows = payload.data || [];
         renderDirectionSummary(payload.direction_counts || {});

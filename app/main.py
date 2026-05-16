@@ -57,7 +57,7 @@ async def major_coin_page(request: Request) -> HTMLResponse:
 @app.get("/api/rankings/change")
 async def api_change(
     window: str = Query("24h"),
-    limit: int = Query(50, ge=1, le=500),
+    limit: int = Query(50, ge=1, le=2000),
     direction: str | None = Query(None),
     sort_by_funding_rate: bool = Query(False),
     sort_by_funding_time: bool = Query(False),
