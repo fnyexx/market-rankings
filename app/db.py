@@ -69,9 +69,47 @@ def init_db() -> None:
             CREATE INDEX IF NOT EXISTS idx_rankings_change
             ON rankings(metric, window, pct_change DESC);
 
+            CREATE TABLE IF NOT EXISTS major_coin_candles_1m (
+              inst_id TEXT NOT NULL,
+              ts INTEGER NOT NULL,
+              open REAL NOT NULL,
+              high REAL NOT NULL,
+              low REAL NOT NULL,
+              close REAL NOT NULL,
+              volume_contract REAL,
+              volume_base REAL,
+              volume_quote REAL,
+              confirmed INTEGER NOT NULL DEFAULT 0,
+              fetched_at INTEGER NOT NULL,
+              PRIMARY KEY (inst_id, ts)
+            );
+
+            CREATE INDEX IF NOT EXISTS idx_major_coin_candles_1m_inst_ts
+            ON major_coin_candles_1m(inst_id, ts DESC);
+
+            CREATE TABLE IF NOT EXISTS major_coin_rankings (
+              metric TEXT NOT NULL,
+              window TEXT NOT NULL,
+              inst_id TEXT NOT NULL,
+              direction TEXT NOT NULL,
+              pct_change REAL,
+              volume_quote REAL,
+              avg_minute_volume_quote REAL,
+              open_price REAL,
+              close_price REAL,
+              start_ts INTEGER,
+              end_ts INTEGER,
+              calculated_at INTEGER NOT NULL,
+              PRIMARY KEY (metric, window, inst_id)
+            );
+
+            CREATE INDEX IF NOT EXISTS idx_major_coin_rankings_change
+            ON major_coin_rankings(metric, window, pct_change DESC);
+
             """
         )
         _ensure_column(conn, "rankings", "direction", "TEXT NOT NULL DEFAULT 'long'")
+        _ensure_column(conn, "rankings", "volume_quote", "REAL")
         _ensure_column(conn, "instruments", "funding_rate", "REAL")
         _ensure_column(conn, "instruments", "funding_time", "INTEGER")
         _ensure_column(conn, "instruments", "next_funding_time", "INTEGER")
@@ -198,6 +236,34 @@ def upsert_candles(inst_id: str, candles: Iterable[Sequence[str]]) -> None:
         )
 
 
+def upsert_major_coin_candles(inst_id: str, candles: Iterable[Sequence[str]]) -> None:
+    now = int(time.time())
+    rows = _build_candle_rows(inst_id, candles, now)
+    if not rows:
+        return
+    with connect() as conn:
+        conn.executemany(
+            """
+            INSERT INTO major_coin_candles_1m (
+              inst_id, ts, open, high, low, close,
+              volume_contract, volume_base, volume_quote, confirmed, fetched_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(inst_id, ts) DO UPDATE SET
+              open = excluded.open,
+              high = excluded.high,
+              low = excluded.low,
+              close = excluded.close,
+              volume_contract = excluded.volume_contract,
+              volume_base = excluded.volume_base,
+              volume_quote = excluded.volume_quote,
+              confirmed = excluded.confirmed,
+              fetched_at = excluded.fetched_at
+            """,
+            rows,
+        )
+
+
 def replace_rankings(rows: Iterable[tuple]) -> None:
     rows = list(rows)
     calculated_at = int(time.time())
@@ -207,9 +273,27 @@ def replace_rankings(rows: Iterable[tuple]) -> None:
             """
             INSERT INTO rankings (
               metric, window, inst_id, direction, pct_change,
+              volume_quote, open_price, close_price, start_ts, end_ts, calculated_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            [(*row, calculated_at) for row in rows],
+        )
+
+
+def replace_major_coin_rankings(rows: Iterable[tuple]) -> None:
+    rows = list(rows)
+    calculated_at = int(time.time())
+    with connect() as conn:
+        conn.execute("DELETE FROM major_coin_rankings")
+        conn.executemany(
+            """
+            INSERT INTO major_coin_rankings (
+              metric, window, inst_id, direction, pct_change,
+              volume_quote, avg_minute_volume_quote,
               open_price, close_price, start_ts, end_ts, calculated_at
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             [(*row, calculated_at) for row in rows],
         )
@@ -240,12 +324,52 @@ def query_rankings(
         ).fetchall()
 
 
+def query_major_coin_rankings(
+    window: str,
+    limit: int,
+    direction: str | None = None,
+) -> list[sqlite3.Row]:
+    direction_clause = "AND direction = ?" if direction else ""
+    params: tuple = (window, direction, limit) if direction else (window, limit)
+    with connect() as conn:
+        return conn.execute(
+            f"""
+            SELECT *
+            FROM major_coin_rankings
+            WHERE metric = 'pct_change' AND window = ?
+            {direction_clause}
+            ORDER BY ABS(pct_change) DESC
+            LIMIT ?
+            """,
+            params,
+        ).fetchall()
+
+
 def count_ranking_directions(window: str) -> dict[str, int]:
     with connect() as conn:
         rows = conn.execute(
             """
             SELECT direction, COUNT(*) AS count
             FROM rankings
+            WHERE metric = 'pct_change' AND window = ?
+            GROUP BY direction
+            """,
+            (window,),
+        ).fetchall()
+    counts = {"long": 0, "short": 0}
+    for row in rows:
+        if row["direction"] in counts:
+            counts[row["direction"]] = row["count"]
+    counts["total"] = counts["long"] + counts["short"]
+    return counts
+
+
+def count_major_coin_ranking_directions(window: str) -> dict[str, int]:
+    with connect() as conn:
+        rows = conn.execute(
+            """
+            SELECT direction, COUNT(*) AS count
+            FROM major_coin_rankings
             WHERE metric = 'pct_change' AND window = ?
             GROUP BY direction
             """,
@@ -316,6 +440,48 @@ def query_candles(inst_id: str, limit: int) -> list[sqlite3.Row]:
             """,
             (inst_id, limit),
         ).fetchall()
+
+
+def query_major_coin_candles(inst_id: str, limit: int) -> list[sqlite3.Row]:
+    with connect() as conn:
+        return conn.execute(
+            """
+            SELECT
+              inst_id, ts, open, high, low, close,
+              volume_contract, volume_base, volume_quote,
+              confirmed, fetched_at
+            FROM major_coin_candles_1m
+            WHERE inst_id = ?
+            ORDER BY ts DESC
+            LIMIT ?
+            """,
+            (inst_id, limit),
+        ).fetchall()
+
+
+def _build_candle_rows(
+    inst_id: str,
+    candles: Iterable[Sequence[str]],
+    fetched_at: int,
+) -> list[tuple]:
+    rows = []
+    for candle in candles:
+        rows.append(
+            (
+                inst_id,
+                int(candle[0]),
+                float(candle[1]),
+                float(candle[2]),
+                float(candle[3]),
+                float(candle[4]),
+                _optional_float(candle, 5),
+                _optional_float(candle, 6),
+                _optional_float(candle, 7),
+                int(candle[8]) if len(candle) > 8 and candle[8] != "" else 0,
+                fetched_at,
+            )
+        )
+    return rows
 
 
 def _optional_float(values: Sequence[str], index: int) -> float | None:

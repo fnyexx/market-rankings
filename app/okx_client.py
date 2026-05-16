@@ -28,15 +28,18 @@ class OkxClient:
             and (item.get("quoteCcy") == quote or item.get("settleCcy") == quote)
         ]
 
-    async def get_1h_candles(self, inst_id: str, limit: int | None = None) -> list[list[str]]:
+    async def get_candles(self, inst_id: str, bar: str, limit: int) -> list[list[str]]:
         response = await self._client.get(
             "/api/v5/market/candles",
-            params={"instId": inst_id, "bar": "1H", "limit": limit or settings.candles_limit},
+            params={"instId": inst_id, "bar": bar, "limit": limit},
         )
         response.raise_for_status()
         payload = response.json()
         _raise_for_okx_error(payload)
         return payload["data"]
+
+    async def get_1h_candles(self, inst_id: str, limit: int | None = None) -> list[list[str]]:
+        return await self.get_candles(inst_id, "1H", limit or settings.candles_limit)
 
     async def get_funding_rate(self, inst_id: str) -> dict | None:
         response = await self._client.get("/api/v5/public/funding-rate", params={"instId": inst_id})

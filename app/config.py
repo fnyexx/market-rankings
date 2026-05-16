@@ -1,5 +1,5 @@
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 import yaml
@@ -36,6 +36,15 @@ def _float_env(name: str, default: float) -> float:
     return float(_value(name, default))
 
 
+def _list_env(name: str, default: list[str]) -> list[str]:
+    value = _value(name, default)
+    if isinstance(value, str):
+        return [item.strip() for item in value.split(",") if item.strip()]
+    if isinstance(value, list):
+        return [str(item).strip() for item in value if str(item).strip()]
+    return default
+
+
 @dataclass(frozen=True)
 class Settings:
     host: str = str(_value("HOST", "127.0.0.1"))
@@ -54,6 +63,16 @@ class Settings:
     ws_subscribe_batch_size: int = _int_env("WS_SUBSCRIBE_BATCH_SIZE", 50)
     ws_reconnect_initial_seconds: int = _int_env("WS_RECONNECT_INITIAL_SECONDS", 5)
     ws_reconnect_max_seconds: int = _int_env("WS_RECONNECT_MAX_SECONDS", 60)
+    major_coin_inst_ids: list[str] = field(default_factory=list)
+    major_coin_poll_interval_seconds: int = _int_env("MAJOR_COIN_POLL_INTERVAL_SECONDS", 10)
+    major_coin_candles_limit: int = _int_env("MAJOR_COIN_CANDLES_LIMIT", 30)
+
+    def __post_init__(self) -> None:
+        object.__setattr__(
+            self,
+            "major_coin_inst_ids",
+            _list_env("MAJOR_COIN_INST_IDS", ["BTC-USDT-SWAP", "ETH-USDT-SWAP", "SOL-USDT-SWAP"]),
+        )
 
 
 settings = Settings()

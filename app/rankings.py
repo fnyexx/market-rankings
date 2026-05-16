@@ -33,6 +33,7 @@ def calculate_rankings() -> int:
                 close_price = scoped[-1]["close"]
                 if open_price <= 0:
                     continue
+                volume_quote = sum(candle["volume_quote"] or 0 for candle in scoped)
                 pct_change = (close_price - open_price) / open_price * 100
                 direction = "long" if pct_change >= 0 else "short"
                 common = (
@@ -40,6 +41,7 @@ def calculate_rankings() -> int:
                     inst_id,
                     direction,
                     pct_change,
+                    volume_quote,
                     open_price,
                     close_price,
                     scoped[0]["ts"],

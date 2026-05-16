@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ title }}</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: Arial, "Microsoft YaHei", sans-serif;
+        background: #f4f6f8;
+        color: #17202a;
+      }
+      body {
+        margin: 0;
+      }
+      header {
+        background: #ffffff;
+        border-bottom: 1px solid #dde3ea;
+      }
+      .bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 18px 20px;
+      }
+      h1 {
+        margin: 0;
+        font-size: 22px;
+      }
+      nav,
+      .windows,
+      .ranking-summary {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      button {
+        border: 1px solid #c9d3df;
+        background: #ffffff;
+        border-radius: 6px;
+        color: #1e2b37;
+        cursor: pointer;
+        font-size: 14px;
+        padding: 8px 12px;
+      }
+      button.active {
+        background: #0f766e;
+        border-color: #0f766e;
+        color: #ffffff;
+      }
+      main {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      .toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 14px;
+      }
+      .summary-item {
+        background: #ffffff;
+        border: 1px solid #dde3ea;
+        border-radius: 6px;
+        color: #344054;
+        font-size: 14px;
+        padding: 8px 12px;
+      }
+      input {
+        border: 1px solid #c9d3df;
+        border-radius: 6px;
+        font-size: 14px;
+        min-width: 220px;
+        padding: 9px 12px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background: #ffffff;
+        border: 1px solid #dde3ea;
+      }
+      th,
+      td {
+        border-bottom: 1px solid #e6ebf0;
+        font-size: 14px;
+        padding: 10px 12px;
+        text-align: right;
+        white-space: nowrap;
+      }
+      th {
+        background: #eef3f6;
+        cursor: pointer;
+        font-weight: 600;
+      }
+      th:first-child,
+      td:first-child,
+      th:nth-child(2),
+      td:nth-child(2) {
+        text-align: left;
+      }
+      .positive {
+        color: #047857;
+      }
+      .negative {
+        color: #b91c1c;
+      }
+      .muted {
+        color: #667085;
+      }
+      .table-wrap {
+        overflow-x: auto;
+      }
+      @media (max-width: 760px) {
+        .bar {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="bar">
+        <h1>{{ title }}</h1>
+        <nav aria-label="ranking navigation">
+          <button type="button" onclick="location.href='/'">全币种</button>
+          <button type="button" class="active">主流币</button>
+        </nav>
+      </div>
+    </header>
+    <main>
+      <div class="toolbar">
+        <div class="windows" id="windows"></div>
+        <div class="ranking-summary" id="direction-summary"></div>
+        <input id="search" placeholder="搜索合约，例如 BTC">
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th data-key="rank">排名</th>
+              <th data-key="inst_id">合约</th>
+              <th data-key="direction">方向</th>
+              <th data-key="abs_pct_change">涨跌幅</th>
+              <th data-key="volume_quote">成交额 USDT</th>
+              <th data-key="avg_minute_volume_quote">1m平均成交额 USDT</th>
+              <th data-key="open_price">开始价</th>
+              <th data-key="close_price">最新价</th>
+              <th data-key="calculated_at">计算时间</th>
+            </tr>
+          </thead>
+          <tbody id="rows">
+            <tr><td colspan="9" class="muted">加载中</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+    <script>
+      const windows = ["1m", "5m", "15m", "30m"];
+      let currentWindow = "30m";
+      let rows = [];
+      let sortKey = "abs_pct_change";
+      let sortDirection = "desc";
+
+      const fmtNumber = new Intl.NumberFormat("zh-CN", { maximumFractionDigits: 4 });
+      const fmtVolume = new Intl.NumberFormat("zh-CN", { maximumFractionDigits: 0 });
+
+      function renderWindowButtons() {
+        const container = document.getElementById("windows");
+        container.innerHTML = "";
+        for (const item of windows) {
+          const button = document.createElement("button");
+          button.textContent = item;
+          button.className = item === currentWindow ? "active" : "";
+          button.onclick = () => {
+            currentWindow = item;
+            renderWindowButtons();
+            loadRows();
+          };
+          container.appendChild(button);
+        }
+      }
+
+      async function loadRows() {
+        const response = await fetch(`/api/major-coins/rankings/change?window=${currentWindow}&limit=200`);
+        const payload = await response.json();
+        rows = payload.data || [];
+        renderDirectionSummary(payload.direction_counts || {});
+        renderRows();
+      }
+
+      function renderDirectionSummary(counts) {
+        const container = document.getElementById("direction-summary");
+        const longCount = counts.long || 0;
+        const shortCount = counts.short || 0;
+        const totalCount = counts.total || longCount + shortCount;
+        container.innerHTML = `
+          <span class="summary-item">${currentWindow} 多方 ${longCount}</span>
+          <span class="summary-item">${currentWindow} 空方 ${shortCount}</span>
+          <span class="summary-item">合计 ${totalCount}</span>
+        `;
+      }
+
+      function renderRows() {
+        const keyword = document.getElementById("search").value.trim().toUpperCase();
+        const tbody = document.getElementById("rows");
+        const filtered = rows
+          .filter(row => !keyword || row.inst_id.includes(keyword))
+          .sort((a, b) => compare(a[sortKey], b[sortKey]));
+
+        tbody.innerHTML = "";
+        if (!filtered.length) {
+          tbody.innerHTML = '<tr><td colspan="9" class="muted">暂无数据</td></tr>';
+          return;
+        }
+
+        for (const row of filtered) {
+          const changeClass = row.direction === "short" ? "negative" : "positive";
+          const directionLabel = row.direction === "short" ? "空" : "多";
+          const directionClass = row.direction === "short" ? "negative" : "positive";
+          const displayPctChange = row.abs_pct_change ?? Math.abs(row.pct_change || 0);
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${row.rank}</td>
+            <td>${row.inst_id}</td>
+            <td class="${directionClass}">${directionLabel}</td>
+            <td class="${changeClass}">${fmtNumber.format(displayPctChange)}%</td>
+            <td>${fmtVolume.format(row.volume_quote || 0)}</td>
+            <td>${fmtVolume.format(row.avg_minute_volume_quote || 0)}</td>
+            <td>${fmtNumber.format(row.open_price)}</td>
+            <td>${fmtNumber.format(row.close_price)}</td>
+            <td>${formatTime(row.calculated_at)}</td>
+          `;
+          tbody.appendChild(tr);
+        }
+      }
+
+      function compare(a, b) {
+        if (typeof a === "string") {
+          return sortDirection === "asc" ? a.localeCompare(b) : b.localeCompare(a);
+        }
+        return sortDirection === "asc" ? (a || 0) - (b || 0) : (b || 0) - (a || 0);
+      }
+
+      function formatTime(seconds) {
+        if (!seconds) return "";
+        return new Date(seconds * 1000).toLocaleString("zh-CN", { hour12: false });
+      }
+
+      document.getElementById("search").addEventListener("input", renderRows);
+      document.querySelectorAll("th").forEach(th => {
+        th.addEventListener("click", () => {
+          const key = th.dataset.key;
+          sortDirection = sortKey === key && sortDirection === "desc" ? "asc" : "desc";
+          sortKey = key;
+          renderRows();
+        });
+      });
+
+      renderWindowButtons();
+      loadRows();
+      setInterval(loadRows, 10000);
+    </script>
+  </body>
+</html>

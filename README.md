@@ -17,12 +17,17 @@ python -m venv .venv
 主页面有三个菜单：
 
 - 涨跌幅
+- 主流币
 - K 线数据
 - API 文档
 
 兼容入口仍保留，并渲染同一个页面：
 
 - http://127.0.0.1:8000/rankings/change
+
+主流币分钟级涨跌幅页面：
+
+- http://127.0.0.1:8000/rankings/major-coins
 
 ## 配置
 
@@ -112,9 +117,17 @@ K 线数据：
 GET /api/candles?inst_id=BTC-USDT-SWAP&limit=100
 ```
 
+主流币分钟级涨跌幅：
+
+```text
+GET /api/major-coins/rankings/change?window=30m&limit=50
+GET /api/major-coins/candles?inst_id=BTC-USDT-SWAP&limit=30
+```
+
 参数：
 
 - `window`：可选 `1h`、`2h`、`4h`、`12h`、`24h`，默认 `24h`。
+- 主流币 `window`：可选 `1m`、`5m`、`15m`、`30m`，默认 `30m`。
 - `limit`：返回条数，范围 `1` 到 `500`，默认 `50`。
 - `direction`：多空方向，可选 `long`、`short`；不传则返回全部方向。
 - `sort_by_funding_rate`：是否按资金费率绝对值从高到低排序，默认 `false`。
@@ -145,6 +158,8 @@ GET /api/candles?inst_id=BTC-USDT-SWAP&limit=100
       "direction": "long",
       "pct_change": 2.31,
       "abs_pct_change": 2.31,
+      "volume_quote": 123456789,
+      "avg_hourly_volume_quote": 5144032.875,
       "open_price": 62000,
       "close_price": 63432,
       "start_ts": 1777647600000,
@@ -175,3 +190,6 @@ GET /api/candles?inst_id=BTC-USDT-SWAP&limit=100
 | `ws_subscribe_batch_size` | `50` | WebSocket 每批订阅数量 |
 | `ws_reconnect_initial_seconds` | `5` | WebSocket 初始重连等待秒数 |
 | `ws_reconnect_max_seconds` | `60` | WebSocket 最大重连等待秒数 |
+| `major_coin_inst_ids` | `BTC/ETH/SOL` | 主流币分钟级模块的 OKX 合约 ID 列表 |
+| `major_coin_poll_interval_seconds` | `10` | 主流币 1m K 线轮询间隔 |
+| `major_coin_candles_limit` | `30` | 主流币每次拉取的 1m K 线数量 |
