@@ -25,7 +25,8 @@ async def startup() -> None:
     collector = WebSocketCollector() if settings.collector_mode == "websocket" else RestCollector()
     asyncio.create_task(collector.run_forever())
     asyncio.create_task(ranking_loop())
-    asyncio.create_task(funding_loop())
+    if settings.funding_enabled:
+        asyncio.create_task(funding_loop())
     asyncio.create_task(major_coin_loop())
 
 
@@ -222,6 +223,7 @@ def _ranking_response(
         "sort_by_funding_time": sort_by_funding_time,
         "limit": limit,
         "collector_mode": settings.collector_mode,
+        "funding_enabled": settings.funding_enabled,
         "data": [
             {
                 "rank": index + 1,

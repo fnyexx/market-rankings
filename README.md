@@ -185,6 +185,7 @@ GET /api/major-coins/candles?inst_id=BTC-USDT-SWAP&limit=30
 | `candles_limit` | `25` | 每次拉取的 1H K 线数量 |
 | `ranking_interval_seconds` | `600` | 排行榜计算间隔 |
 | `instruments_refresh_seconds` | `3600` | 合约列表刷新间隔 |
+| `funding_enabled` | `true` | 是否启动资金费率刷新任务 |
 | `funding_refresh_seconds` | `600` | 资金费率刷新间隔 |
 | `funding_requests_per_second` | `2` | 资金费率接口请求频率 |
 | `ws_subscribe_batch_size` | `50` | WebSocket 每批订阅数量 |

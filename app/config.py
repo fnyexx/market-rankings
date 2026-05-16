@@ -36,6 +36,15 @@ def _float_env(name: str, default: float) -> float:
     return float(_value(name, default))
 
 
+def _bool_env(name: str, default: bool) -> bool:
+    value = _value(name, default)
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        return value.strip().lower() in {"1", "true", "yes", "on"}
+    return bool(value)
+
+
 def _list_env(name: str, default: list[str]) -> list[str]:
     value = _value(name, default)
     if isinstance(value, str):
@@ -58,6 +67,7 @@ class Settings:
     candles_limit: int = _int_env("CANDLES_LIMIT", 25)
     ranking_interval_seconds: int = _int_env("RANKING_INTERVAL_SECONDS", 600)
     instruments_refresh_seconds: int = _int_env("INSTRUMENTS_REFRESH_SECONDS", 3600)
+    funding_enabled: bool = _bool_env("FUNDING_ENABLED", True)
     funding_refresh_seconds: int = _int_env("FUNDING_REFRESH_SECONDS", 600)
     funding_requests_per_second: float = _float_env("FUNDING_REQUESTS_PER_SECOND", 2.0)
     ws_subscribe_batch_size: int = _int_env("WS_SUBSCRIBE_BATCH_SIZE", 50)

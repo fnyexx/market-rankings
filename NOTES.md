@@ -31,6 +31,7 @@ collector_mode: rest
 quote_ccy: USDT
 rest_requests_per_second: 2
 ranking_interval_seconds: 600
+funding_enabled: true
 ws_reconnect_initial_seconds: 5
 ws_reconnect_max_seconds: 60
 major_coin_inst_ids:
@@ -279,6 +280,7 @@ GET /api/candles?inst_id=BTC-USDT-SWAP&limit=100
 - 新增主流币页面 `/rankings/major-coins`。
 - 新增主流币 API：`/api/major-coins/rankings/change` 和 `/api/major-coins/candles`。
 - 将 OKX K 线客户端抽成通用 `get_candles(inst_id, bar, limit)`，原 1H K 线采集继续复用该方法。
+- 新增 `funding_enabled` 配置项，用于控制资金费率后台刷新任务是否启动；关闭后 API 仍返回历史资金费率字段，但不再主动更新。
 
 ## 后续优化
 
