@@ -116,20 +116,35 @@ def _candles_response(inst_id: str, bar: str, limit: int, rows) -> dict:
         "bar": bar,
         "limit": limit,
         "data": [
-            {
-                "ts": row["ts"],
-                "open": row["open"],
-                "high": row["high"],
-                "low": row["low"],
-                "close": row["close"],
-                "volume_contract": row["volume_contract"],
-                "volume_base": row["volume_base"],
-                "volume_quote": row["volume_quote"],
-                "confirmed": row["confirmed"],
-                "fetched_at": row["fetched_at"],
-            }
+            _candle_item(row)
             for row in rows
         ],
+    }
+
+
+def _candle_item(row) -> dict:
+    open_price = row["open"]
+    close_price = row["close"]
+    price_change = close_price - open_price
+    pct_change = None
+    amplitude = None
+    if open_price > 0:
+        pct_change = price_change / open_price * 100
+        amplitude = (row["high"] - row["low"]) / open_price * 100
+    return {
+        "ts": row["ts"],
+        "open": open_price,
+        "high": row["high"],
+        "low": row["low"],
+        "close": close_price,
+        "price_change": price_change,
+        "pct_change": pct_change,
+        "amplitude": amplitude,
+        "volume_contract": row["volume_contract"],
+        "volume_base": row["volume_base"],
+        "volume_quote": row["volume_quote"],
+        "confirmed": row["confirmed"],
+        "fetched_at": row["fetched_at"],
     }
 
 

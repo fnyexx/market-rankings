@@ -117,6 +117,12 @@ K 线数据：
 GET /api/candles?inst_id=BTC-USDT-SWAP&limit=100
 ```
 
+K 线接口会按每根 K 线额外返回：
+
+- `price_change`：涨跌额，`close - open`
+- `pct_change`：涨跌幅，`(close - open) / open * 100`
+- `amplitude`：振幅，`(high - low) / open * 100`
+
 主流币分钟级涨跌幅：
 
 ```text

@@ -238,13 +238,16 @@
                 <th>&#26368;&#39640;&#20215;</th>
                 <th>&#26368;&#20302;&#20215;</th>
                 <th>&#25910;&#30424;&#20215;</th>
+                <th>&#28072;&#36300;&#39069;</th>
+                <th>&#28072;&#36300;&#24133;</th>
+                <th>&#25391;&#24133;</th>
                 <th>&#25104;&#20132;&#37327; USDT</th>
                 <th>&#26159;&#21542;&#30830;&#35748;</th>
                 <th>&#20889;&#20837;&#26102;&#38388;</th>
               </tr>
             </thead>
             <tbody id="candle-rows">
-              <tr><td colspan="8" class="muted">&#35831;&#20808;&#36873;&#25321;&#21512;&#32422;</td></tr>
+              <tr><td colspan="11" class="muted">&#35831;&#20808;&#36873;&#25321;&#21512;&#32422;</td></tr>
             </tbody>
           </table>
         </div>
@@ -261,6 +264,7 @@
         <h3>K&#32447;&#25968;&#25454;</h3>
         <p>&#26597;&#35810;&#25351;&#23450;&#21512;&#32422;&#30340;&#26412;&#22320; 1H K &#32447;&#25968;&#25454;&#12290;</p>
         <pre><code>GET /api/candles?inst_id=BTC-USDT-SWAP&amp;limit=100</code></pre>
+        <p>K &#32447;&#25509;&#21475;&#20250;&#25353;&#27599;&#26681; K &#32447;&#35745;&#31639;&#24182;&#36820;&#22238; <code>price_change</code>&#65288;&#28072;&#36300;&#39069;&#65289;&#12289;<code>pct_change</code>&#65288;&#28072;&#36300;&#24133;&#65289;&#12289;<code>amplitude</code>&#65288;&#25391;&#24133;&#65289;&#12290;</p>
 
         <h3>&#20027;&#27969;&#24065;&#20998;&#38047;&#32423;&#28072;&#36300;&#24133;&#25490;&#34892;&#27036;</h3>
         <p>&#26597;&#35810;&#37197;&#32622;&#30340;&#20027;&#27969;&#24065;&#21512;&#32422;&#20998;&#38047;&#32423;&#28072;&#36300;&#24133;&#25490;&#34892;&#27036;&#65292;&#19981;&#21253;&#21547;&#36164;&#37329;&#36153;&#30456;&#20851;&#23383;&#27573;&#12290;</p>
@@ -436,6 +440,16 @@
               <td><code>close_price</code></td>
               <td>number</td>
               <td>&#26102;&#38388;&#31383;&#21475;&#26411;&#23614; K &#32447;&#30340;&#25910;&#30424;&#20215;&#12290;</td>
+            </tr>
+            <tr>
+              <td><code>price_change</code></td>
+              <td>number</td>
+              <td>K &#32447;&#25910;&#30424;&#20215;&#20943;&#24320;&#30424;&#20215;&#65292;&#29992;&#20110; K &#32447;&#25509;&#21475;&#12290;</td>
+            </tr>
+            <tr>
+              <td><code>amplitude</code></td>
+              <td>number | null</td>
+              <td>K &#32447;&#25391;&#24133;&#65292;&#35745;&#31639;&#26041;&#24335;&#20026; <code>(high - low) / open * 100</code>&#12290;</td>
             </tr>
             <tr>
               <td><code>start_ts</code></td>
@@ -621,7 +635,7 @@
         const tbody = document.getElementById("candle-rows");
         tbody.innerHTML = "";
         if (!candles.length) {
-          tbody.innerHTML = '<tr><td colspan="8" class="muted">\u6682\u65e0K\u7ebf\u6570\u636e</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="11" class="muted">\u6682\u65e0K\u7ebf\u6570\u636e</td></tr>';
           return;
         }
         for (const row of candles) {
@@ -632,6 +646,9 @@
             <td>${fmtNumber.format(row.high)}</td>
             <td>${fmtNumber.format(row.low)}</td>
             <td>${fmtNumber.format(row.close)}</td>
+            <td class="${changeClass(row.price_change)}">${fmtNumber.format(row.price_change || 0)}</td>
+            <td class="${changeClass(row.pct_change)}">${formatPercent(row.pct_change)}</td>
+            <td>${formatPercent(row.amplitude)}</td>
             <td>${fmtVolume.format(row.volume_quote || 0)}</td>
             <td>${row.confirmed ? "\u662f" : "\u5426"}</td>
             <td>${formatTime(row.fetched_at)}</td>
@@ -685,6 +702,12 @@
         return sortDirection === "asc" ? (a || 0) - (b || 0) : (b || 0) - (a || 0);
       }
 
+      function changeClass(value) {
+        if ((value || 0) < 0) return "negative";
+        if ((value || 0) > 0) return "positive";
+        return "";
+      }
+
       function formatTime(seconds) {
         if (!seconds) return "";
         return new Date(seconds * 1000).toLocaleString("zh-CN", { hour12: false });
@@ -698,6 +721,11 @@
       function formatRate(value) {
         if (value === null || value === undefined) return "";
         return `${fmtRate.format(value * 100)}%`;
+      }
+
+      function formatPercent(value) {
+        if (value === null || value === undefined) return "";
+        return `${fmtNumber.format(value)}%`;
       }
 
       function formatInterval(value) {

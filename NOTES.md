@@ -246,6 +246,7 @@ pct_change < 0  => short
 - 合约搜索
 - 自动刷新
 - K 线数据菜单默认选择 `BTC-USDT-SWAP`，只有选中合约后才查询本地 K 线数据
+- K 线数据展示每根 K 线的涨跌额、涨跌幅、振幅。
 - 排行榜展示窗口成交额、1 小时平均成交额、资金费率、结算周期、当次结算时间、下次结算时间
 - 排行榜页面请求 `limit=2000`，用于展示当前窗口下全部币种。
 - 排行榜标题区域展示当前窗口下所有币种的多方、空方、合计数量，计数由后端统计，不受页面返回条数限制
@@ -272,6 +273,12 @@ GET /api/candles?inst_id=BTC-USDT-SWAP&limit=100
 - `query`：合约搜索关键词，用于合约列表接口
 - `inst_id`：OKX 合约 ID，用于 K 线查询接口
 
+K 线接口额外返回字段：
+
+- `price_change`：涨跌额，`close - open`
+- `pct_change`：涨跌幅，`(close - open) / open * 100`
+- `amplitude`：振幅，`(high - low) / open * 100`
+
 ## 2026-05-16 变更记录
 
 - 新增涨跌幅排行榜成交额字段：`volume_quote`。
@@ -282,6 +289,7 @@ GET /api/candles?inst_id=BTC-USDT-SWAP&limit=100
 - 新增主流币 API：`/api/major-coins/rankings/change` 和 `/api/major-coins/candles`。
 - 将 OKX K 线客户端抽成通用 `get_candles(inst_id, bar, limit)`，原 1H K 线采集继续复用该方法。
 - 新增 `funding_enabled` 配置项，用于控制资金费率后台刷新任务是否启动；关闭后 API 仍返回历史资金费率字段，但不再主动更新。
+- K 线展示和 K 线 API 新增 `price_change`、`pct_change`、`amplitude` 字段。
 
 ## 后续优化
 

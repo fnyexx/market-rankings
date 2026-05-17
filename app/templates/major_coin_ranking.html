@@ -219,13 +219,16 @@
                 <th>最高价</th>
                 <th>最低价</th>
                 <th>收盘价</th>
+                <th>涨跌额</th>
+                <th>涨跌幅</th>
+                <th>振幅</th>
                 <th>成交额 USDT</th>
                 <th>是否确认</th>
                 <th>写入时间</th>
               </tr>
             </thead>
             <tbody id="minute-candle-rows">
-              <tr><td colspan="8" class="muted">请选择合约</td></tr>
+              <tr><td colspan="11" class="muted">请选择合约</td></tr>
             </tbody>
           </table>
         </div>
@@ -245,13 +248,16 @@
                 <th>最高价</th>
                 <th>最低价</th>
                 <th>收盘价</th>
+                <th>涨跌额</th>
+                <th>涨跌幅</th>
+                <th>振幅</th>
                 <th>成交额 USDT</th>
                 <th>是否确认</th>
                 <th>写入时间</th>
               </tr>
             </thead>
             <tbody id="daily-candle-rows">
-              <tr><td colspan="8" class="muted">请选择合约</td></tr>
+              <tr><td colspan="11" class="muted">请选择合约</td></tr>
             </tbody>
           </table>
         </div>
@@ -484,7 +490,7 @@
         const tbody = document.getElementById(tbodyId);
         tbody.innerHTML = "";
         if (!candles.length) {
-          tbody.innerHTML = '<tr><td colspan="8" class="muted">暂无K线数据</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="11" class="muted">暂无K线数据</td></tr>';
           return;
         }
         for (const row of candles) {
@@ -495,6 +501,9 @@
             <td>${fmtNumber.format(row.high)}</td>
             <td>${fmtNumber.format(row.low)}</td>
             <td>${fmtNumber.format(row.close)}</td>
+            <td class="${valueClass(row.price_change)}">${fmtNumber.format(row.price_change || 0)}</td>
+            <td class="${valueClass(row.pct_change)}">${formatPercent(row.pct_change)}</td>
+            <td>${formatPercent(row.amplitude)}</td>
             <td>${fmtVolume.format(row.volume_quote || 0)}</td>
             <td>${row.confirmed ? "是" : "否"}</td>
             <td>${formatTime(row.fetched_at)}</td>
@@ -538,6 +547,12 @@
         return direction === "asc" ? (a || 0) - (b || 0) : (b || 0) - (a || 0);
       }
 
+      function valueClass(value) {
+        if ((value || 0) < 0) return "negative";
+        if ((value || 0) > 0) return "positive";
+        return "";
+      }
+
       function formatTime(seconds) {
         if (!seconds) return "";
         return new Date(seconds * 1000).toLocaleString("zh-CN", { hour12: false });
@@ -546,6 +561,11 @@
       function formatMsTime(milliseconds) {
         if (!milliseconds) return "";
         return new Date(milliseconds).toLocaleString("zh-CN", { hour12: false });
+      }
+
+      function formatPercent(value) {
+        if (value === null || value === undefined) return "";
+        return `${fmtNumber.format(value)}%`;
       }
 
       document.getElementById("search").addEventListener("input", renderRows);
