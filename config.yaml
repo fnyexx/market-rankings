@@ -69,12 +69,12 @@ major_coin_inst_ids:
   - ADA-USDT-SWAP
   - DOGE-USDT-SWAP
   - TON-USDT-SWAP
-  - TRX-USDT-SWAP
-  - AVAX-USDT-SWAP
-  - LINK-USDT-SWAP
-  - DOT-USDT-SWAP
-  - LTC-USDT-SWAP
-  - BCH-USDT-SWAP
+  # - TRX-USDT-SWAP
+  # - AVAX-USDT-SWAP
+  # - LINK-USDT-SWAP
+  # - DOT-USDT-SWAP
+  # - LTC-USDT-SWAP
+  # - BCH-USDT-SWAP
 
 # 主流币分钟级 K 线轮询间隔，单位：秒。
 major_coin_poll_interval_seconds: 10
@@ -82,3 +82,9 @@ major_coin_poll_interval_seconds: 10
 # 主流币分钟级 K 线每次拉取数量。
 # 30m 排行至少需要 30 条 1m K 线。
 major_coin_candles_limit: 30
+
+# 主流币日 K 线每次拉取数量。
+major_coin_daily_candles_limit: 30
+
+# 主流币日 K 线轮询间隔，单位：秒。默认 1200 秒，即每 20 分钟获取一次全主流币日线。
+major_coin_daily_poll_interval_seconds: 1200

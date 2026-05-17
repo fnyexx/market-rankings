@@ -76,6 +76,8 @@ class Settings:
     major_coin_inst_ids: list[str] = field(default_factory=list)
     major_coin_poll_interval_seconds: int = _int_env("MAJOR_COIN_POLL_INTERVAL_SECONDS", 10)
     major_coin_candles_limit: int = _int_env("MAJOR_COIN_CANDLES_LIMIT", 30)
+    major_coin_daily_candles_limit: int = _int_env("MAJOR_COIN_DAILY_CANDLES_LIMIT", 30)
+    major_coin_daily_poll_interval_seconds: int = _int_env("MAJOR_COIN_DAILY_POLL_INTERVAL_SECONDS", 1200)
 
     def __post_init__(self) -> None:
         object.__setattr__(

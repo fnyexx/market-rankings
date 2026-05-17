@@ -10,7 +10,7 @@ from app import db
 from app.collector import RestCollector, WebSocketCollector
 from app.config import settings
 from app.funding import funding_loop
-from app.major_coins import MAJOR_COIN_WINDOWS, major_coin_loop
+from app.major_coins import MAJOR_COIN_DAILY_WINDOWS, MAJOR_COIN_WINDOWS, major_coin_daily_loop, major_coin_loop
 from app.rankings import WINDOWS, ranking_loop
 
 logging.basicConfig(level=logging.INFO)
@@ -28,6 +28,7 @@ async def startup() -> None:
     if settings.funding_enabled:
         asyncio.create_task(funding_loop())
     asyncio.create_task(major_coin_loop())
+    asyncio.create_task(major_coin_daily_loop())
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -80,6 +81,15 @@ async def api_major_coin_change(
     return _major_coin_ranking_response(window, limit, direction)
 
 
+@app.get("/api/major-coins/daily-rankings/change")
+async def api_major_coin_daily_change(
+    window: str = Query("30d"),
+    limit: int = Query(50, ge=1, le=500),
+    direction: str | None = Query(None),
+) -> dict:
+    return _major_coin_daily_ranking_response(window, limit, direction)
+
+
 @app.get("/api/major-coins/candles")
 async def api_major_coin_candles(
     inst_id: str = Query(..., min_length=1),
@@ -87,9 +97,23 @@ async def api_major_coin_candles(
 ) -> dict:
     inst_id = inst_id.upper()
     rows = db.query_major_coin_candles(inst_id, limit)
+    return _candles_response(inst_id, "1m", limit, rows)
+
+
+@app.get("/api/major-coins/daily-candles")
+async def api_major_coin_daily_candles(
+    inst_id: str = Query(..., min_length=1),
+    limit: int = Query(30, ge=1, le=1000),
+) -> dict:
+    inst_id = inst_id.upper()
+    rows = db.query_major_coin_daily_candles(inst_id, limit)
+    return _candles_response(inst_id, "1D", limit, rows)
+
+
+def _candles_response(inst_id: str, bar: str, limit: int, rows) -> dict:
     return {
         "inst_id": inst_id,
-        "bar": "1m",
+        "bar": bar,
         "limit": limit,
         "data": [
             {
@@ -179,7 +203,7 @@ def _major_coin_ranking_response(
         "direction_counts": direction_counts,
         "limit": limit,
         "configured_inst_ids": settings.major_coin_inst_ids,
-        "poll_interval_seconds": settings.major_coin_poll_interval_seconds,
+        "poll_interval_seconds": settings.major_coin_daily_poll_interval_seconds,
         "data": [
             {
                 "rank": index + 1,
@@ -189,6 +213,45 @@ def _major_coin_ranking_response(
                 "abs_pct_change": abs(row["pct_change"] or 0),
                 "volume_quote": row["volume_quote"],
                 "avg_minute_volume_quote": row["avg_minute_volume_quote"],
+                "open_price": row["open_price"],
+                "close_price": row["close_price"],
+                "start_ts": row["start_ts"],
+                "end_ts": row["end_ts"],
+                "calculated_at": row["calculated_at"],
+            }
+            for index, row in enumerate(rows)
+        ],
+    }
+
+
+def _major_coin_daily_ranking_response(
+    window: str,
+    limit: int,
+    direction: str | None = None,
+) -> dict:
+    if window not in MAJOR_COIN_DAILY_WINDOWS:
+        raise HTTPException(status_code=400, detail=f"window must be one of {', '.join(MAJOR_COIN_DAILY_WINDOWS)}")
+    if direction not in (None, "long", "short"):
+        raise HTTPException(status_code=400, detail="direction must be long or short")
+    rows = db.query_major_coin_daily_rankings(window, limit, direction)
+    direction_counts = db.count_major_coin_daily_ranking_directions(window)
+    return {
+        "metric": "pct_change",
+        "window": window,
+        "direction": direction,
+        "direction_counts": direction_counts,
+        "limit": limit,
+        "configured_inst_ids": settings.major_coin_inst_ids,
+        "poll_interval_seconds": settings.major_coin_poll_interval_seconds,
+        "data": [
+            {
+                "rank": index + 1,
+                "inst_id": row["inst_id"],
+                "direction": row["direction"],
+                "pct_change": row["pct_change"],
+                "abs_pct_change": abs(row["pct_change"] or 0),
+                "volume_quote": row["volume_quote"],
+                "avg_daily_volume_quote": row["avg_daily_volume_quote"],
                 "open_price": row["open_price"],
                 "close_price": row["close_price"],
                 "start_ts": row["start_ts"],

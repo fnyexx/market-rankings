@@ -122,12 +122,15 @@ GET /api/candles?inst_id=BTC-USDT-SWAP&limit=100
 ```text
 GET /api/major-coins/rankings/change?window=30m&limit=50
 GET /api/major-coins/candles?inst_id=BTC-USDT-SWAP&limit=30
+GET /api/major-coins/daily-rankings/change?window=30d&limit=50
+GET /api/major-coins/daily-candles?inst_id=BTC-USDT-SWAP&limit=30
 ```
 
 参数：
 
 - `window`：可选 `1h`、`2h`、`4h`、`12h`、`24h`，默认 `24h`。
 - 主流币 `window`：可选 `1m`、`5m`、`15m`、`30m`，默认 `30m`。
+- 主流币日排行 `window`：可选 `1d`、`5d`、`15d`、`30d`，默认 `30d`。
 - `limit`：返回条数，范围 `1` 到 `2000`，默认 `50`。
 - `direction`：多空方向，可选 `long`、`short`；不传则返回全部方向。
 - `sort_by_funding_rate`：是否按资金费率绝对值从高到低排序，默认 `false`。
@@ -194,3 +197,5 @@ GET /api/major-coins/candles?inst_id=BTC-USDT-SWAP&limit=30
 | `major_coin_inst_ids` | `BTC/ETH/SOL` | 主流币分钟级模块的 OKX 合约 ID 列表 |
 | `major_coin_poll_interval_seconds` | `10` | 主流币 1m K 线轮询间隔 |
 | `major_coin_candles_limit` | `30` | 主流币每次拉取的 1m K 线数量 |
+| `major_coin_daily_candles_limit` | `30` | 主流币每次拉取的 1D 日 K 线数量 |
+| `major_coin_daily_poll_interval_seconds` | `1200` | 主流币 1D 日 K 线轮询间隔，默认每 20 分钟获取一次全主流币行情 |
