@@ -200,6 +200,55 @@ async def api_candles(
     }
 
 
+@app.get("/api/funding/rankings")
+async def api_funding_rankings(
+    limit: int = Query(100, ge=1, le=2000),
+    inst_id: str | None = Query(None),
+    funding_interval_hours: float | None = Query(None),
+    min_abs_funding_rate: float | None = Query(None),
+    window: str = Query("24h"),
+) -> dict:
+    if window not in WINDOWS:
+        raise HTTPException(status_code=400, detail=f"window must be one of {', '.join(WINDOWS)}")
+
+    rows = db.query_funding_rankings(
+        limit=limit,
+        inst_id=inst_id,
+        funding_interval_hours=funding_interval_hours,
+        min_abs_funding_rate=min_abs_funding_rate,
+        window=window,
+    )
+
+    return {
+        "metric": "funding_rate",
+        "window": window,
+        "limit": limit,
+        "data": [
+            {
+                "rank": index + 1,
+                "inst_id": row["inst_id"],
+                "base_ccy": row["base_ccy"],
+                "quote_ccy": row["quote_ccy"],
+                "settle_ccy": row["settle_ccy"],
+                "funding_rate": row["funding_rate"],
+                "abs_funding_rate": abs(row["funding_rate"]) if row["funding_rate"] is not None else None,
+                "funding_interval_hours": row["funding_interval_hours"],
+                "funding_time": row["funding_time"],
+                "next_funding_time": row["next_funding_time"],
+                "funding_updated_at": row["funding_updated_at"],
+                "pct_change": row["pct_change"],
+                "abs_pct_change": abs(row["pct_change"]) if row["pct_change"] is not None else None,
+                "volume_quote": row["volume_quote"],
+                "direction": row["direction"],
+                "open_price": row["open_price"],
+                "close_price": row["close_price"],
+                "calculated_at": row["calculated_at"],
+            }
+            for index, row in enumerate(rows)
+        ],
+    }
+
+
 def _major_coin_ranking_response(
     window: str,
     limit: int,

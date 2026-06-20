@@ -132,6 +132,12 @@ GET /api/major-coins/daily-rankings/change?window=30d&limit=50
 GET /api/major-coins/daily-candles?inst_id=BTC-USDT-SWAP&limit=30
 ```
 
+资金费率数据排行：
+
+```text
+GET /api/funding/rankings?limit=100&window=24h&inst_id=BTC-USDT-SWAP&funding_interval_hours=8&min_abs_funding_rate=0.0001
+```
+
 参数：
 
 - `window`：可选 `1h`、`2h`、`4h`、`12h`、`24h`，默认 `24h`。
@@ -142,9 +148,11 @@ GET /api/major-coins/daily-candles?inst_id=BTC-USDT-SWAP&limit=30
 - `sort_by_funding_rate`：是否按资金费率绝对值从高到低排序，默认 `false`。
 - `sort_by_funding_time`：是否按当次资金费结算时间从近到远排序，默认 `false`。如果两个排序参数都为 `true`，优先按当次结算时间排序。
 - `query`：合约搜索关键词，用于 `/api/instruments`。
-- `inst_id`：OKX 合约 ID，用于 `/api/candles`，例如 `BTC-USDT-SWAP`。
+- `inst_id`：OKX 合约 ID，例如 `BTC-USDT-SWAP`。
+- `funding_interval_hours`：资金费率排行接口结算周期（小时），例如 `8.0`。
+- `min_abs_funding_rate`：最低资金费率绝对值限制，用于过滤（例如 `0.0001`）。
 
-返回示例：
+返回示例（以涨跌幅排行接口为例）：
 
 ```json
 {
@@ -174,6 +182,38 @@ GET /api/major-coins/daily-candles?inst_id=BTC-USDT-SWAP&limit=30
       "start_ts": 1777647600000,
       "end_ts": 1777734000000,
       "calculated_at": 1777737600
+    }
+  ]
+}
+```
+
+返回示例（以资金费率排行接口为例）：
+
+```json
+{
+  "metric": "funding_rate",
+  "window": "24h",
+  "limit": 100,
+  "data": [
+    {
+      "rank": 1,
+      "inst_id": "BTC-USDT-SWAP",
+      "base_ccy": "BTC",
+      "quote_ccy": "USDT",
+      "settle_ccy": "USDT",
+      "funding_rate": 0.00015,
+      "abs_funding_rate": 0.00015,
+      "funding_interval_hours": 8.0,
+      "funding_time": 1718870400000,
+      "next_funding_time": 1718899200000,
+      "funding_updated_at": 1718871234,
+      "pct_change": 1.25,
+      "abs_pct_change": 1.25,
+      "volume_quote": 1200000,
+      "direction": "long",
+      "open_price": 65000,
+      "close_price": 65812.5,
+      "calculated_at": 1718870400
     }
   ]
 }
