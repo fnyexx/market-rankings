@@ -647,3 +647,47 @@ def _backfill_ranking_directions(conn: sqlite3.Connection) -> None:
         END
         """
     )
+
+
+def query_funding_rankings(
+    limit: int = 100,
+    inst_id: str | None = None,
+    funding_interval_hours: float | None = None,
+    min_abs_funding_rate: float | None = None,
+    window: str = "24h",
+) -> list[sqlite3.Row]:
+    clauses = ["i.state = 'live'", "i.funding_rate IS NOT NULL"]
+    params = []
+
+    if inst_id:
+        clauses.append("i.inst_id = ?")
+        params.append(inst_id.upper())
+
+    if funding_interval_hours is not None:
+        clauses.append("i.funding_interval_hours = ?")
+        params.append(funding_interval_hours)
+
+    if min_abs_funding_rate is not None:
+        clauses.append("ABS(i.funding_rate) >= ?")
+        params.append(min_abs_funding_rate)
+
+    where_clause = " AND ".join(clauses)
+
+    sql = f"""
+        SELECT
+            i.inst_id, i.base_ccy, i.quote_ccy, i.settle_ccy,
+            i.funding_rate, i.funding_time, i.next_funding_time,
+            i.funding_interval_hours, i.funding_updated_at,
+            r.pct_change, r.volume_quote, r.direction,
+            r.open_price, r.close_price, r.calculated_at
+        FROM instruments i
+        LEFT JOIN rankings r ON i.inst_id = r.inst_id AND r.metric = 'pct_change' AND r.window = ?
+        WHERE {where_clause}
+        ORDER BY ABS(i.funding_rate) DESC
+        LIMIT ?
+    """
+
+    query_params = [window] + params + [limit]
+
+    with connect() as conn:
+        return conn.execute(sql, query_params).fetchall()
