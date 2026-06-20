@@ -274,6 +274,10 @@
         <p>&#26597;&#35810;&#25351;&#23450;&#20027;&#27969;&#24065;&#21512;&#32422;&#30340;&#26412;&#22320; 1m K &#32447;&#25968;&#25454;&#12290;</p>
         <pre><code>GET /api/major-coins/candles?inst_id=BTC-USDT-SWAP&amp;limit=30</code></pre>
 
+        <h3>资金费率数据排行</h3>
+        <p>按资金费率绝对值降序查询资金费率排行，支持结算周期、费率绝对值阈值等条件过滤，并关联指定 window 的涨跌幅和成交量等行情数据。</p>
+        <pre><code>GET /api/funding/rankings?limit=100&amp;window=24h&amp;inst_id=BTC-USDT-SWAP&amp;funding_interval_hours=8&amp;min_abs_funding_rate=0.0001</code></pre>
+
         <h3>&#35831;&#27714;&#21442;&#25968;</h3>
         <table>
           <thead>
@@ -327,6 +331,27 @@
               <td>&#21542;</td>
               <td><code>false</code></td>
               <td>&#26159;&#21542;&#25353;&#24403;&#27425;&#36164;&#37329;&#36153;&#32467;&#31639;&#26102;&#38388;&#20174;&#36817;&#21040;&#36828;&#25490;&#24207;&#12290;&#33509;&#19982; <code>sort_by_funding_rate</code> &#21516;&#26102;&#20026; <code>true</code>&#65292;&#20248;&#20808;&#25353;&#24403;&#27425;&#32467;&#31639;&#26102;&#38388;&#25490;&#24207;&#12290;</td>
+            </tr>
+            <tr>
+              <td><code>inst_id</code></td>
+              <td>string</td>
+              <td>否</td>
+              <td>无</td>
+              <td>指定交易对 ID 过滤（如 <code>BTC-USDT-SWAP</code>），大小写不敏感，用于资金费率排行接口。</td>
+            </tr>
+            <tr>
+              <td><code>funding_interval_hours</code></td>
+              <td>float</td>
+              <td>否</td>
+              <td>无</td>
+              <td>指定资金费率结算周期（单位：小时）过滤（如 <code>8</code>、<code>4</code>），用于资金费率排行接口。</td>
+            </tr>
+            <tr>
+              <td><code>min_abs_funding_rate</code></td>
+              <td>float</td>
+              <td>否</td>
+              <td>无</td>
+              <td>指定资金费率的最低绝对值过滤（如 <code>0.0001</code> 代表 0.01%），用于资金费率排行接口。</td>
             </tr>
           </tbody>
         </table>
@@ -415,6 +440,11 @@
               <td><code>funding_rate</code></td>
               <td>number | null</td>
               <td>&#24403;&#21069;&#36164;&#37329;&#36153;&#29575;&#12290;</td>
+            </tr>
+            <tr>
+              <td><code>abs_funding_rate</code></td>
+              <td>number | null</td>
+              <td>资金费率绝对值，用于资金费率排行接口。</td>
             </tr>
             <tr>
               <td><code>funding_interval_hours</code></td>
